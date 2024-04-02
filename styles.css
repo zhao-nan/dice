@@ -1,0 +1,16 @@
+/* styles.css */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+button {
+    margin-right: 20px;
+}
+
+#result {
+    font-size: 2em;
+}
