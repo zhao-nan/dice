@@ -10,4 +10,28 @@ document.getElementById('roll-dice')?.addEventListener('click', () => {
             console.log('No img element found for dice ' + (index + 1));
         }
     });
+
+    createPlayerSections(5);
 });
+
+function createPlayerSections(numPlayers) {
+    const container = document.getElementById('player-container');
+    for (let i = 1; i <= numPlayers; i++) {
+        const playerSection = document.createElement('section');
+        playerSection.id = 'player' + i;
+
+        const playerIcon = document.createElement('img');
+        playerIcon.src = 'img/player' + i + '.png';
+        playerIcon.className = 'player-icon';
+        playerIcon.width = 100;
+        playerSection.appendChild(playerIcon);
+
+        for (let j = 1; j <= 5; j++) {
+            const resultImg = document.createElement('img');
+            resultImg.id = 'resultImg' + i + '-' + j;
+            playerSection.appendChild(resultImg);
+        }
+
+        container.appendChild(playerSection);
+    }
+}
