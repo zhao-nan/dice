@@ -21,7 +21,7 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
         playerSection.id = 'player' + i;
 
         const playerIcon = document.createElement('img');
-        playerIcon.src = 'img/player' + (i%5 +1) + '.png';
+        playerIcon.src = 'img/player' + (i%8 +1) + '.png';
         playerIcon.className = 'player-icon';
         playerIcon.width = 100;
         playerSection.appendChild(playerIcon);
