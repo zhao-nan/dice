@@ -7,7 +7,6 @@ document.getElementById('setup-game')?.addEventListener('click', () => {
     // a two-dimensional array of dice values for each player
     const diceVals: number[][] = Array.from({length: numPlayers}, () => 
                                     Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1));
-    console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
     const p1section = document.getElementById('player1');
     numPlayersForm.style.display = 'none';
@@ -43,4 +42,20 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
 
 function roll5dice() {
     return Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1);
+}
+
+type Claim = {
+    count: number,
+    diceVal: number,
+}
+
+function isGreater(this: Claim, other: Claim) {
+    return this.count > other.count || (this.count == other.count && this.diceVal > other.diceVal);
+}
+
+function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
+    let val = claim.diceVal;
+    let own = ownDice.filter(d => d == val || d == 1).length;
+    let expected = own + numOtherDice / 3;
+    return expected / (numOtherDice + 5);
 }
