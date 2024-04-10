@@ -7,6 +7,7 @@ document.getElementById('setup-game')?.addEventListener('click', () => {
     // a two-dimensional array of dice values for each player
     const diceVals: number[][] = Array.from({length: numPlayers}, () => 
                                     Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1));
+    console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
     const p1section = document.getElementById('player1');
     numPlayersForm.style.display = 'none';
@@ -14,10 +15,14 @@ document.getElementById('setup-game')?.addEventListener('click', () => {
 });
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
+    const tan = Math.tan(Math.PI / numPlayers);
     const container = document.getElementById('player-container');
+    container.style.setProperty('--m', numPlayers.toString());
+    container.style.setProperty('--tan', tan.toFixed(2));
     for (let i = 1; i <= numPlayers; i++) {
         const playerSection = document.createElement('section');
         playerSection.id = 'player' + i;
+        playerSection.style.setProperty('--i', i.toString());
 
         const playerIcon = document.createElement('img');
         playerIcon.src = 'img/player' + (i%8 +1) + '.png';
