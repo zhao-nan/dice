@@ -8,14 +8,12 @@ body {
 }
 
 .playerContainer {
-    --d: 6.5em;
-    /* image size */
-    --rel: 1;
     /* how much extra space we want between images, 1 = one image size */
-    --r: calc(.5*(1 + var(--rel))*var(--d)/var(--tan));
+    --rel: 3;
     /* circle radius */
-    --s: calc(2*var(--r) + var(--d));
+    --r: calc(.5*(1 + var(--rel))*var(--img-size)/var(--tan));
     /* container size */
+    --s: calc(2*var(--r) + var(--img-size));
     position: relative;
     width: var(--s);
     height: var(--s);
@@ -26,16 +24,27 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    margin: calc(-.5*var(--d));
-    width: var(--d);
-    height: var(--d);
+    margin: calc(-.5*var(--img-size));
+    width: var(--img-size);
+    height: var(--img-size);
     --az: calc(var(--i)*1turn/var(--m));
     transform: rotate(var(--az)) translate(var(--r)) rotate(calc(-1*var(--az)));
 }
 
+.dice-container {
+    display: flex;
+    justify-content: center;
+}
+
+.player-icon {
+    border: solid 2px teal;
+    border-radius: 100%;
+    object-fit: cover;
+}
+
 section {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #e42323;
