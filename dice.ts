@@ -1,5 +1,70 @@
 window.onload = createGameChoices;
 
+var currentClaim: Claim = {count: 0, diceVal: 0};
+
+var lives = new Array();
+
+var numPlayers: number;
+
+function playerTurn() {
+    const claimSection = document.createElement('section');
+    claimSection.id = 'claim-section';
+    claimSection.className = 'claim-section';
+
+    // Create slider
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = currentClaim.count.toString();
+    slider.max = (numPlayers*5).toString(); // Convert to string
+    slider.value = currentClaim.count.toString();
+    slider.className = 'slider';
+    claimSection.appendChild(slider);
+    const sliderLabel = document.createElement('label');
+    sliderLabel.textContent = slider.value;
+    claimSection.appendChild(sliderLabel);
+
+    const claimDice = document.createElement('div');
+
+    for (let i = 2; i <= 6; ++i) {
+        const rButtLabel = document.createElement('label');
+        const rButt = document.createElement('input');
+        rButt.type = 'radio';
+        rButt.value = i.toString();
+        rButt.name = 'dice-val-claim';
+
+        const img = document.createElement('img');
+        img.src = getDiceImgSrc(i);
+        img.alt = 'Dice Value ' + i;
+        rButtLabel.appendChild(rButt);
+        rButtLabel.appendChild(img);
+        claimDice.appendChild(rButtLabel);
+    }
+    claimSection.appendChild(claimDice);
+    // Create button
+    const claimButton = document.createElement('button');
+    claimButton.textContent = 'Make Claim';
+    claimButton.disabled = true; // Initially disabled
+    claimSection.appendChild(claimButton);
+
+    // Update button state when slider value changes
+    slider.addEventListener('input', () => {
+        sliderLabel.textContent = slider.value;
+        const claimCount = parseInt(slider.value);
+        const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
+        claimButton.disabled = !isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
+    });
+
+    // Update button state when radio button value changes
+    document.querySelectorAll('input[name="dice-val-claim"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const claimCount = parseInt(slider.value);
+            const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
+            claimButton.disabled = !isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
+        });
+    });
+    document.body.appendChild(claimSection);
+}
+
 function createGameChoices() {
     console.log('Creating game choices...');
     const numPlayersForm = document.createElement('form');
@@ -34,7 +99,10 @@ function startGame(event: Event) {
     const numPlayersForm = document.getElementById('num-players-form') as HTMLFormElement;
 
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
-    const numPlayers = Number(rButts.find(r => r.checked).value);
+    numPlayers = Number(rButts.find(r => r.checked).value);
+    for (let i = 0; i < numPlayers; i++) {
+        lives.push(3);
+    }
     
     // numPlayersForm.style.display = 'none';
     document.body.removeChild(numPlayersForm);
@@ -42,6 +110,7 @@ function startGame(event: Event) {
     const diceVals: number[][] = Array.from({length: numPlayers}, () => roll5dice());
     console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
+    playerTurn();
 };
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
@@ -65,6 +134,18 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
         diceContainer.className = 'dice-container';
         playerSection.appendChild(diceContainer);
 
+        const livesContainer = document.createElement('div');
+        livesContainer.className = 'lives-container';
+        playerSection.appendChild(livesContainer);
+
+        for (let j = 1; j <= lives[i-1]; j++) {
+            const lifeImg = document.createElement('img');
+            lifeImg.src = 'img/life.png';
+            lifeImg.width = 20;
+            lifeImg.className = 'life-img';
+            livesContainer.appendChild(lifeImg);
+        }
+
         for (let j = 1; j <= 5; j++) {
             const resultImg = document.createElement('img');
             resultImg.id = 'resultImg' + i + '-' + j;
@@ -73,7 +154,7 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
             if (i != 1) {
                 resultImg.src = 'img/qm.png';
             } else {
-                resultImg.src = getImgSrc(p1dice[j-1]);
+                resultImg.src = getDiceImgSrc(p1dice[j-1]);
             }
         }
         container.appendChild(playerSection);
@@ -89,8 +170,8 @@ type Claim = {
     diceVal: number,
 }
 
-function isGreater(this: Claim, other: Claim) {
-    return this.count > other.count || (this.count == other.count && this.diceVal > other.diceVal);
+function isGreater(thisClaim: Claim, other: Claim) {
+    return thisClaim.count > other.count || (thisClaim.count == other.count && thisClaim.diceVal > other.diceVal);
 }
 
 function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
@@ -100,6 +181,6 @@ function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
     return expected / (numOtherDice + 5);
 }
 
-function getImgSrc(diceVal: number) {
+function getDiceImgSrc(diceVal: number) {
     return 'img/dice' + diceVal + '.png';
 }
