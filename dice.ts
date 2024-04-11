@@ -6,24 +6,57 @@ var lives = new Array();
 
 var numPlayers: number;
 
+var diceVals: number[][];
+
+function npcTurn(playerNum: number){
+    wait(1000);
+    const prob = probOfClaim(currentClaim, diceVals[playerNum], (numPlayers - 1) * 5);
+    const rand = Math.random();
+    if (rand > prob) {
+        console.log('Calling bluff...');
+        callBluff();
+    } else {
+        currentClaim = npcClaim();
+        
+    }
+}
+
 function playerTurn() {
+    const playerTurnSection = document.createElement('section');
+    playerTurnSection.id = 'player-turn-section';
+    playerTurnSection.className = 'player-turn-section';
+
+    const callSection = document.createElement('section');
+    callSection.id = 'call-section';
+    callSection.className = 'call-section';
+
+    const callButton = document.createElement('button');
+    callButton.textContent = 'Call Bluff';
+    callSection.appendChild(callButton);
+    playerTurnSection.appendChild(callSection);
+
+
     const claimSection = document.createElement('section');
     claimSection.id = 'claim-section';
     claimSection.className = 'claim-section';
 
     // Create slider
+    const sliderDiv = document.createElement('div');
+    sliderDiv.className = 'slider-div';
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.min = currentClaim.count.toString();
-    slider.max = (numPlayers*5).toString(); // Convert to string
+    slider.max = (numPlayers*5).toString();
     slider.value = currentClaim.count.toString();
     slider.className = 'slider';
-    claimSection.appendChild(slider);
     const sliderLabel = document.createElement('label');
     sliderLabel.textContent = slider.value;
-    claimSection.appendChild(sliderLabel);
+    sliderDiv.appendChild(sliderLabel);
+    sliderDiv.appendChild(slider);
+    claimSection.appendChild(sliderDiv);
 
     const claimDice = document.createElement('div');
+    claimDice.className = 'claim-dice';
 
     for (let i = 2; i <= 6; ++i) {
         const rButtLabel = document.createElement('label');
@@ -62,7 +95,8 @@ function playerTurn() {
             claimButton.disabled = !isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
         });
     });
-    document.body.appendChild(claimSection);
+    playerTurnSection.appendChild(claimSection);
+    document.body.appendChild(playerTurnSection);
 }
 
 function createGameChoices() {
@@ -107,7 +141,7 @@ function startGame(event: Event) {
     // numPlayersForm.style.display = 'none';
     document.body.removeChild(numPlayersForm);
     
-    const diceVals: number[][] = Array.from({length: numPlayers}, () => roll5dice());
+    diceVals = Array.from({length: numPlayers}, () => roll5dice());
     console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
     playerTurn();
@@ -177,10 +211,29 @@ function isGreater(thisClaim: Claim, other: Claim) {
 function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
     let val = claim.diceVal;
     let own = ownDice.filter(d => d == val || d == 1).length;
-    let expected = own + numOtherDice / 3;
-    return expected / (numOtherDice + 5);
+    return probOfAtLeast(claim.count - own, numOtherDice);
+}
+
+// probability of at least k dice that show a number or 1 (in n dice)
+function probOfAtLeast(k:number, n: number) {
+    let prob = 0;
+    for (let i = k; i <= n; i++) {
+        prob += binomial(i, n) * Math.pow(1/3, i) * Math.pow(2/3, n-i);
+    }
+    return prob;
+}
+
+function binomial(n: number, k: number) {
+    var coeff = 1;
+    for (var x = n - k + 1; x <= n; x++) coeff *= x;
+    for (x = 1; x <= k; x++) coeff /= x;
+    return coeff;
 }
 
 function getDiceImgSrc(diceVal: number) {
     return 'img/dice' + diceVal + '.png';
+}
+
+function wait(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
