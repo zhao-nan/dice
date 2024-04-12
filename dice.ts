@@ -1,24 +1,43 @@
 window.onload = createGameChoices;
 
-var currentClaim: Claim = {count: 0, diceVal: 0};
+let currentClaim: Claim = {count: 0, diceVal: 0};
+let currentPlayer: number;
+let lives = new Array();
+let numPlayers: number;
+let diceVals: number[][];
 
-var lives = new Array();
-
-var numPlayers: number;
-
-var diceVals: number[][];
-
-function npcTurn(playerNum: number){
+function npcTurn() {
     wait(1000);
-    const prob = probOfClaim(currentClaim, diceVals[playerNum], (numPlayers - 1) * 5);
+    console.log(currentPlayer + ' is taking their turn');
+    const prob = probOfClaim(currentClaim, diceVals[currentPlayer], (numPlayers - 1) * 5);
     const rand = Math.random();
     if (rand > prob) {
-        console.log('Calling bluff...');
+        console.log('Calling bluff because prob is ' + prob + ' and rand is ' + rand);
         callBluff();
     } else {
-        currentClaim = npcClaim();
-        
+        claim(npcClaim());
     }
+}
+
+function nextTurn() {
+    currentPlayer = (currentPlayer + 1) % numPlayers;
+    if (currentPlayer == 0) {
+        playerTurn();
+    } else {
+        npcTurn();
+    }
+}
+
+function callBluff() {
+
+}
+
+function claim(claim: Claim) {
+    console.log('Claiming: ' + claim.count + ' dice of value ' + claim.diceVal);
+    currentClaim = claim;
+    updatePlayerSection(prevPlayer(), false, false);
+    updatePlayerSection(currentPlayer, true, false);
+    nextTurn();
 }
 
 function playerTurn() {
@@ -64,7 +83,9 @@ function playerTurn() {
         rButt.type = 'radio';
         rButt.value = i.toString();
         rButt.name = 'dice-val-claim';
-
+        if (i == 2) {
+            rButt.checked = true;
+        }
         const img = document.createElement('img');
         img.src = getDiceImgSrc(i);
         img.alt = 'Dice Value ' + i;
@@ -77,6 +98,11 @@ function playerTurn() {
     const claimButton = document.createElement('button');
     claimButton.textContent = 'Make Claim';
     claimButton.disabled = true; // Initially disabled
+    claimButton.addEventListener('click', () => {
+        const claimCount = parseInt(slider.value);
+        const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
+        claim({count: claimCount, diceVal: claimValue});
+    });
     claimSection.appendChild(claimButton);
 
     // Update button state when slider value changes
@@ -100,6 +126,8 @@ function playerTurn() {
 }
 
 function createGameChoices() {
+    console.log('Running tests...');
+    test();
     console.log('Creating game choices...');
     const numPlayersForm = document.createElement('form');
     numPlayersForm.id = 'num-players-form';
@@ -132,6 +160,8 @@ function startGame(event: Event) {
 
     const numPlayersForm = document.getElementById('num-players-form') as HTMLFormElement;
 
+    currentPlayer = 0;
+
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
     numPlayers = Number(rButts.find(r => r.checked).value);
     for (let i = 0; i < numPlayers; i++) {
@@ -142,6 +172,9 @@ function startGame(event: Event) {
     document.body.removeChild(numPlayersForm);
     
     diceVals = Array.from({length: numPlayers}, () => roll5dice());
+
+    test();
+
     console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
     playerTurn();
@@ -153,16 +186,27 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
     container.style.setProperty('--m', numPlayers.toString());
     container.style.setProperty('--tan', tan.toFixed(2));
     container.style.setProperty('--img-size', '100px');
-    for (let i = 1; i <= numPlayers; i++) {
+    for (let i = 0; i < numPlayers; i++) {
         const playerSection = document.createElement('section');
         playerSection.id = 'player' + i;
         playerSection.style.setProperty('--i', i.toString());
 
         const playerIcon = document.createElement('img');
-        playerIcon.src = 'img/player' + (i%8 +1) + '.png';
+        playerIcon.src = 'img/player' + i + '.png';
         playerIcon.className = 'player-icon';
         playerIcon.width = 100;
         playerSection.appendChild(playerIcon);
+
+        const playerClaim = document.createElement('div');
+        playerClaim.className = 'player-claim';
+        playerClaim.id = 'player-claim' + i;
+        const playerClaimVal = document.createElement('p');
+        playerClaimVal.id = 'player-claim-val' + i;
+        const playerClaimDie = document.createElement('img');
+        playerClaimDie.id = 'player-claim-die' + i;
+        playerClaim.appendChild(playerClaimVal);
+        playerClaim.appendChild(playerClaimDie);
+        playerSection.appendChild(playerClaim);
 
         const diceContainer = document.createElement('div');
         diceContainer.className = 'dice-container';
@@ -182,10 +226,10 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
 
         for (let j = 1; j <= 5; j++) {
             const resultImg = document.createElement('img');
-            resultImg.id = 'resultImg' + i + '-' + j;
+            resultImg.id = playerDieImgId(i, j);
             resultImg.className = 'dice-img';
             diceContainer.appendChild(resultImg);
-            if (i != 1) {
+            if (i != 0) {
                 resultImg.src = 'img/qm.png';
             } else {
                 resultImg.src = getDiceImgSrc(p1dice[j-1]);
@@ -193,6 +237,37 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
         }
         container.appendChild(playerSection);
     }
+}
+
+function updatePlayerSection(playerNum: number, showClaim: boolean, showDice: boolean) {
+    const playerSection = document.getElementById('player' + playerNum);
+    if (lives[playerNum] <= 0) {
+        playerSection.setAttribute('class', 'player-section dead');
+    }
+    const playerClaimVal = document.getElementById('player-claim-val' + playerNum) as HTMLParagraphElement;
+    if (playerClaimVal == null) {
+        console.log('Player claim val is null: ' + 'player-claim-val' + playerNum);
+        return;
+    }
+    const playerClaimDie = document.getElementById('player-claim-die' + playerNum) as HTMLImageElement;
+    if (showClaim) {
+        playerClaimVal.textContent = currentClaim.count.toString();
+        playerClaimDie.src = getDiceImgSrc(currentClaim.diceVal);
+    } else {
+        playerClaimVal.textContent = '';
+        playerClaimDie.src = '';
+    }
+    if (showDice) {
+        for (let i = 1; i <= 5; i++) {
+            const resultImg = document.getElementById(playerDieImgId(playerNum, i)) as HTMLImageElement;
+            resultImg.src = getDiceImgSrc(diceVals[playerNum][i-1]);
+        }
+    }
+}
+
+
+function playerDieImgId(playerNum: number, dieNum: number) {
+    return 'playerDieImg-' + playerNum + '-' + dieNum;
 }
 
 function roll5dice() {
@@ -208,6 +283,11 @@ function isGreater(thisClaim: Claim, other: Claim) {
     return thisClaim.count > other.count || (thisClaim.count == other.count && thisClaim.diceVal > other.diceVal);
 }
 
+function npcClaim() {
+    // TODO implement better AI
+    return {count: currentClaim.count + 1, diceVal: currentClaim.diceVal};
+}
+
 function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
     let val = claim.diceVal;
     let own = ownDice.filter(d => d == val || d == 1).length;
@@ -215,11 +295,12 @@ function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
 }
 
 // probability of at least k dice that show a number or 1 (in n dice)
-function probOfAtLeast(k:number, n: number) {
+function probOfAtLeast(k: number, n: number) {
     let prob = 0;
     for (let i = k; i <= n; i++) {
-        prob += binomial(i, n) * Math.pow(1/3, i) * Math.pow(2/3, n-i);
+        prob += binomial(n, i) * Math.pow(1/3, i) * Math.pow(2/3, n-i);
     }
+    console.log('Prob of at least ' + k + ' dice: ' + prob);
     return prob;
 }
 
@@ -236,4 +317,13 @@ function getDiceImgSrc(diceVal: number) {
 
 function wait(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function prevPlayer() {
+    return (currentPlayer -1 + numPlayers) % numPlayers;
+}
+
+function test() {
+    binomial(4,2);
+    console.log(diceVals)
 }
