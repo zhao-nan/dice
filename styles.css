@@ -54,6 +54,21 @@ body {
     justify-content: center;
 }
 
+.player-claim {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 50px;
+    font-weight: bold;
+    gap: 20px;
+    background-color: lightgreen;
+}
+
+.player-claim img {
+    width: 50px;
+    height: 50px;
+}
+
 .player-icon {
     border: solid 2px teal;
     border-radius: 100%;
