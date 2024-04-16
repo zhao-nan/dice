@@ -1,3 +1,6 @@
+import * as npc from './npc.js';
+import { Claim } from './types.js';
+
 window.onload = createGameChoices;
 
 let currentClaim: Claim = {count: 0, diceVal: 0};
@@ -17,7 +20,7 @@ function npcTurn() {
             console.log('Calling bluff because prob is ' + prob + ' and rand is ' + rand);
             callBluff();
         } else {
-            claim(npcClaim());
+            claim(npc.npcClaim(currentClaim, diceVals[currentPlayer], numPlayers));
         }
     }, 1000);
 }
@@ -299,19 +302,10 @@ function roll5dice() {
     return Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1);
 }
 
-type Claim = {
-    count: number,
-    diceVal: number,
-}
-
 function isGreater(thisClaim: Claim, other: Claim) {
     return thisClaim.count > other.count || (thisClaim.count == other.count && thisClaim.diceVal > other.diceVal);
 }
 
-function npcClaim() {
-    // TODO implement better AI
-    return {count: currentClaim.count + 1, diceVal: currentClaim.diceVal};
-}
 
 function probOfClaim(claim: Claim, ownDice: number[], numOtherDice: number) {
     let val = claim.diceVal;
