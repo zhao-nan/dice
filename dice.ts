@@ -7,6 +7,7 @@ let currentClaim: Claim = {count: 0, diceVal: 0};
 let currentPlayer: number;
 let lives = new Array();
 let numPlayers: number;
+let origNumPlayers: number;
 let diceVals: number[][];
 let playerTurnSection: HTMLElement;
 
@@ -22,11 +23,14 @@ function npcTurn() {
         } else {
             claim(npc.npcClaim(currentClaim, diceVals[currentPlayer], numPlayers));
         }
-    }, 1000);
+    }, 2000);
 }
 
 function nextTurn() {
-    currentPlayer = (currentPlayer + 1) % numPlayers;
+     do {
+        currentPlayer = (currentPlayer + 1) % numPlayers;
+    } while (lives[currentPlayer] <= 0)
+
     if (currentPlayer == 0) {
         playerTurn();
     } else {
@@ -35,7 +39,22 @@ function nextTurn() {
 }
 
 function callBluff() {
-
+    for (let i = 0; i < origNumPlayers; i++) {
+        updatePlayerSection(i, false, true);
+    }
+    setTimeout(() => {
+        if (totalNumDiceOf(currentClaim.diceVal) < currentClaim.count) {
+            // Claim successful
+            lives[prevPlayer()] -= 1;
+            alert('Bluff called! Player ' + prevPlayer() + ' loses a life!');
+            startNewRound(prevPlayer())
+        } else {
+            // Claim unsuccessful
+            lives[currentPlayer] -= 1;
+            alert('It was not a bluff! Player ' + currentPlayer + ' loses a life!');
+            startNewRound(currentPlayer)
+        }
+    }, 5000);
 }
 
 function claim(claim: Claim) {
@@ -49,6 +68,33 @@ function claim(claim: Claim) {
 function playerTurn() {
     updatePlayerTurnSection();
     playerTurnSection.style.display = 'block';
+}
+
+function startNewRound(player: number) {
+    console.log('Starting new round with player ' + player);
+    if (lives[player] <= 0) {
+        alert('Player ' + player + ' has been eliminated!');
+        numPlayers -= 1;
+    }
+    if (lives.filter(l => l > 0).length == 1) {
+        alert('Player ' + lives.findIndex(l => l > 0) + ' wins!');
+    }
+    for (let i = 0; i < origNumPlayers; i++) {
+        if (lives[i] > 0) {
+            diceVals[i] = roll5dice();
+        } else {
+            diceVals[i] = [0, 0, 0, 0, 0];
+        }
+        if (i == 0) {
+            updatePlayerSection(i, false, true);
+        } else {
+            updatePlayerSection(i, false, false);
+        }
+    }
+    currentClaim = {count: 0, diceVal: 0};
+    currentPlayer = prevPlayer();
+    console.log('currentPlayer: ' + currentPlayer);
+    nextTurn();
 }
 
 function createGameChoices() {
@@ -89,6 +135,7 @@ function startGame(event: Event) {
 
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
     numPlayers = Number(rButts.find(r => r.checked).value);
+    origNumPlayers = numPlayers;
     for (let i = 0; i < numPlayers; i++) {
         lives.push(3);
     }
@@ -242,15 +289,10 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
 
         const livesContainer = document.createElement('div');
         livesContainer.className = 'lives-container';
+        livesContainer.id = 'lives-container' + i;
         playerSection.appendChild(livesContainer);
 
-        for (let j = 1; j <= lives[i-1]; j++) {
-            const lifeImg = document.createElement('img');
-            lifeImg.src = 'img/life.png';
-            lifeImg.width = 20;
-            lifeImg.className = 'life-img';
-            livesContainer.appendChild(lifeImg);
-        }
+        drawLives(i, livesContainer);
 
         for (let j = 1; j <= 5; j++) {
             const resultImg = document.createElement('img');
@@ -264,6 +306,16 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
             }
         }
         container.appendChild(playerSection);
+    }
+}
+
+function drawLives(i: number, livesContainer: HTMLDivElement) {
+    for (let j = 1; j <= lives[i]; j++) {
+        const lifeImg = document.createElement('img');
+        lifeImg.src = 'img/life.png';
+        lifeImg.width = 20;
+        lifeImg.className = 'life-img';
+        livesContainer.appendChild(lifeImg);
     }
 }
 
@@ -285,12 +337,18 @@ function updatePlayerSection(playerNum: number, showClaim: boolean, showDice: bo
         playerClaimVal.textContent = '';
         playerClaimDie.src = '';
     }
-    if (showDice) {
-        for (let i = 1; i <= 5; i++) {
-            const resultImg = document.getElementById(playerDieImgId(playerNum, i)) as HTMLImageElement;
+    for (let i = 1; i <= 5; i++) {
+        const resultImg = document.getElementById(playerDieImgId(playerNum, i)) as HTMLImageElement;
+        if (showDice || playerNum == 0) {
             resultImg.src = getDiceImgSrc(diceVals[playerNum][i-1]);
+        } else {
+            resultImg.src = 'img/qm.png';
         }
     }
+    // redraw lives
+    const livesContainer = document.getElementById('lives-container' + playerNum) as HTMLDivElement;
+    livesContainer.innerHTML = '';
+    drawLives(playerNum, livesContainer);
 }
 
 
@@ -340,6 +398,11 @@ function wait(ms: number) {
 
 function prevPlayer() {
     return (currentPlayer -1 + numPlayers) % numPlayers;
+}
+
+function totalNumDiceOf(diceVal: number) {
+    const dice = diceVals.flat();
+    return dice.filter(d => d == diceVal || d == 1).length;
 }
 
 function test() {
