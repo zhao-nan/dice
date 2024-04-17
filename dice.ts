@@ -12,14 +12,14 @@ let diceVals: number[][];
 let playerTurnSection: HTMLElement;
 
 function npcTurn() {
-    playerTurnSection.style.display = 'none';
+    deactivatePlayerTurnSection();
     console.log(currentPlayer + ' is taking their turn');
     setTimeout(() => {
         const prob = probOfClaim(currentClaim, diceVals[currentPlayer], (numPlayers - 1) * 5);
         const rand = Math.random();
         if (rand > prob) {
             console.log('Calling bluff because prob is ' + prob + ' and rand is ' + rand);
-            callBluff();
+            doubt();
         } else {
             claim(npc.npcClaim(currentClaim, diceVals[currentPlayer], numPlayers));
         }
@@ -38,7 +38,7 @@ function nextTurn() {
     }
 }
 
-function callBluff() {
+function doubt() {
     for (let i = 0; i < origNumPlayers; i++) {
         updatePlayerSection(i, false, true);
     }
@@ -46,7 +46,7 @@ function callBluff() {
         if (totalNumDiceOf(currentClaim.diceVal) < currentClaim.count) {
             // Claim successful
             lives[prevPlayer()] -= 1;
-            alert('Bluff called! Player ' + prevPlayer() + ' loses a life!');
+            alert('Justified call! Player ' + prevPlayer() + ' loses a life!');
             startNewRound(prevPlayer())
         } else {
             // Claim unsuccessful
@@ -67,7 +67,7 @@ function claim(claim: Claim) {
 
 function playerTurn() {
     updatePlayerTurnSection();
-    playerTurnSection.style.display = 'block';
+    activatePlayerTurnSection();
 }
 
 function startNewRound(player: number) {
@@ -157,15 +157,16 @@ function createPlayerTurnSection() {
     playerTurnSection.id = 'player-turn-section';
     playerTurnSection.className = 'player-turn-section';
 
-    const callSection = document.createElement('section');
-    callSection.id = 'call-section';
-    callSection.className = 'call-section';
+    const doubtSection = document.createElement('section');
+    doubtSection.id = 'doubt-section';
+    doubtSection.className = 'doubt-section';
 
-    const callButton = document.createElement('button');
-    callButton.textContent = 'Call Bluff';
-    callSection.appendChild(callButton);
-    playerTurnSection.appendChild(callSection);
-
+    const doubtButton = document.createElement('button');
+    doubtButton.textContent = 'Doubt!';
+    doubtSection.appendChild(doubtButton);
+    doubtButton.addEventListener('click', doubt);
+    playerTurnSection.appendChild(doubtSection);
+    doubtButton.disabled = true; // Initially disabled
 
     const claimSection = document.createElement('section');
     claimSection.id = 'claim-section';
@@ -177,12 +178,10 @@ function createPlayerTurnSection() {
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.id = 'claim-slider';
-    slider.min = currentClaim.count.toString();
     slider.max = (numPlayers*5).toString();
-    slider.value = currentClaim.count.toString();
     slider.className = 'slider';
     const sliderLabel = document.createElement('label');
-    sliderLabel.textContent = slider.value;
+    sliderLabel.id = 'claim-slider-label';
     sliderDiv.appendChild(sliderLabel);
     sliderDiv.appendChild(slider);
     claimSection.appendChild(sliderDiv);
@@ -246,13 +245,16 @@ function createPlayerTurnSection() {
     claimSection.appendChild(claimButton);
     playerTurnSection.appendChild(claimSection);
     document.body.appendChild(playerTurnSection);
-    playerTurnSection.style.display = 'none';
 }
 
 function updatePlayerTurnSection() {
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
-    slider.min = currentClaim.count.toString();
-    slider.value = currentClaim.count.toString();
+    const minVal = Math.max(currentClaim.count, 1);
+    slider.min = minVal.toString();
+    slider.value = minVal.toString();
+    document.getElementById('claim-slider-label').textContent = slider.value;
+    const doubtButton = document.getElementById('doubt-section').querySelector('button');
+    doubtButton.disabled = currentClaim.count == 0;
 }
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
@@ -264,7 +266,7 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
     for (let i = 0; i < numPlayers; i++) {
         const playerSection = document.createElement('section');
         playerSection.id = 'player' + i;
-        playerSection.style.setProperty('--i', i.toString());
+        playerSection.style.setProperty('--i', (i+1.5).toString());
 
         const playerIcon = document.createElement('img');
         playerIcon.src = 'img/player' + i + '.png';
@@ -351,6 +353,27 @@ function updatePlayerSection(playerNum: number, showClaim: boolean, showDice: bo
     drawLives(playerNum, livesContainer);
 }
 
+function deactivatePlayerTurnSection() {
+    const playerTurnSection = document.getElementById('player-turn-section');
+    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
+    playerTurnSection.setAttribute('active', 'false');
+    interactiveElements.forEach(element => {
+        element.setAttribute('disabled', 'true');
+    });
+}
+
+function activatePlayerTurnSection() {
+    const playerTurnSection = document.getElementById('player-turn-section');
+    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
+    playerTurnSection.setAttribute('active', 'true');
+    interactiveElements.forEach(element => {
+        element.removeAttribute('disabled');
+    });
+    if (currentClaim.count == 0) {
+        const doubtButton = document.getElementById('doubt-section').querySelector('button');
+        doubtButton.setAttribute('disabled', 'true');
+    }
+}
 
 function playerDieImgId(playerNum: number, dieNum: number) {
     return 'playerDieImg-' + playerNum + '-' + dieNum;

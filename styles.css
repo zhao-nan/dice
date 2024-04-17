@@ -1,7 +1,7 @@
 /* styles.css */
 body {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -10,18 +10,18 @@ body {
 }
 
 .dice-container img {
-    width: 50px;
-    height: 50px;
-    margin: 0 10px;
+    width: 25px;
+    height: 25px;
+    margin: 0 5px;
 }
 
 .playerContainer {
     /* how much extra space we want between images, 1 = one image size */
-    --rel: 3;
+    --rel: 2;
     /* circle radius */
-    --r: calc(.5*(1 + var(--rel))*var(--img-size)/var(--tan));
+    --r: calc(.75*(1 + var(--rel))*var(--img-size)/var(--tan));
     /* container size */
-    --s: calc(2*var(--r) + var(--img-size));
+    --s: calc(3*var(--r) + var(--img-size));
     position: relative;
     width: var(--s);
     height: var(--s);
@@ -49,6 +49,14 @@ body {
     padding: 20px;
 }
 
+#player-turn-section[active="false"] {
+    background-color: lightgray;
+}
+
+#player-turn-section[active="false"] .claim-section{
+    background-color: lightgray;
+}
+
 .dice-container {
     display: flex;
     justify-content: center;
@@ -71,8 +79,14 @@ body {
 
 .player-icon {
     border: solid 2px teal;
-    border-radius: 100%;
-    object-fit: cover;
+    border-radius: 5%;
+}
+
+.doubt-section button {
+    font-size: 2em;
+    font-weight: bold;
+    padding: 10px;
+    margin: 10px;
 }
 
 .claim-section {
@@ -110,6 +124,10 @@ body {
 .slider-div label {
     width: 50px;
     text-align: center;
+}
+
+button:disabled {
+    opacity: 0.5;
 }
 
 /* HIDE RADIO in claim box*/
