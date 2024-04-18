@@ -39,6 +39,11 @@ body {
     transform: rotate(var(--az)) translate(var(--r)) rotate(calc(-1*var(--az)));
 }
 
+.life-img {
+    width: 20px;
+    height: 20px;
+}
+
 .player-turn-section {
     display: flex;
     flex-direction: row;
