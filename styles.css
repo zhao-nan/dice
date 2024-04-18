@@ -98,6 +98,12 @@ body {
 .player-activity[status="doubt"] {
     background-color: orange;
 }
+.player-activity[status="dead"] {
+    background-color: black;
+}
+.player-activity[status="dead"] img {
+    display: none;
+}
 
 .player-claim img {
     width: 50px;

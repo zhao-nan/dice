@@ -20,7 +20,7 @@ export function probOfAtLeast(k: number, n: number) {
     for (let i = k; i <= n; i++) {
         prob += binomial(n, i) * Math.pow(1/3, i) * Math.pow(2/3, n-i);
     }
-    console.log('Prob of at least ' + k + ' dice: ' + prob);
+    console.log('Prob of at least ' + k + ' dice in ' + n + ': ' + prob);
     return prob;
 }
 

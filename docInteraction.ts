@@ -118,7 +118,7 @@ export function setPlayerStatus(playerNum: number, status: string) {
     statusLabel.textContent = status;
 }
 
-export function updateClaimEventListeners(doubt: () => void, claim: (Claim) => void, currentClaim: Claim) {
+export function updateClaimEventListeners(claim: (Claim) => void, currentClaim: Claim) {
 
     const claimButton = document.getElementById('claim-button');
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
@@ -264,6 +264,7 @@ export function addEvListeners() {
         }
     });
 }
+
 
 export function getClaimDiceVal() {
     const rButt: HTMLInputElement = document.querySelector('input[name="dice-val-claim"]:checked');

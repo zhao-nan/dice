@@ -6,9 +6,9 @@ import * as util from './util.js';
 window.onload = createGameChoices;
 
 let currentPlayer: Player;
-let players : Player[] = new Array();
+let players: Player[] = new Array();
 let currentNumPlayers: number;
-let playerTurnSection: HTMLElement;
+
 
 function npcTurn() {
     deactivatePlayerTurnSection();
@@ -22,7 +22,7 @@ function npcTurn() {
         } else {
             claim(npc.npcClaim(currentClaim(), currentPlayer.dice, currentNumPlayers));
         }
-    }, 2000);
+    }, 1000);
 }
 
 function nextTurn() {
@@ -41,23 +41,34 @@ function doubt() {
     for (const p of players) {
         doc.updatePlayerSection(p, false, true);
     }
-    setTimeout(() => {
-        const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
-        if (tot < currentClaim().count) {
-            // Claim successful
-            prevPlayer().lives -= 1;
-            alert(`Justified call! 
-                Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
-                but total was only ${tot}. Player ${prevPlayer().id} loses a life!`);
-            startNewRound(prevPlayer())
-        } else {
-            // Claim unsuccessful
-            currentPlayer.lives -= 1;
-            alert(`Player ${prevPlayer().id} was correct: Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
-            and total was ${tot}. Player ${currentPlayer.id} loses a life!`);
-            startNewRound(currentPlayer)
+
+    const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
+    if (tot < currentClaim().count) {
+        // Claim successful
+        prevPlayer().lives -= 1;
+        alert(`Justified call! 
+            Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
+            but total was only ${tot}. Player ${prevPlayer().id} loses a life!`);
+        if (prevPlayer().lives <= 0) {
+            alert(`Player ${prevPlayer().id} has been eliminated!`);
+            doc.setPlayerStatus(prevPlayer().id, 'dead');
+            console.log('currentNumPlayers: ' + currentNumPlayers);
         }
-    }, 5000);
+        currentPlayer = prevPlayer();
+        startNewRound(prevPlayer())
+    } else {
+        // Claim unsuccessful
+        currentPlayer.lives -= 1;
+        alert(`Player ${prevPlayer().id} was correct: Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
+        and total was ${tot}. Player ${currentPlayer.id} loses a life!`);
+        if (currentPlayer.lives <= 0) {
+            alert(`Player ${currentPlayer.id} has been eliminated!`);
+            doc.setPlayerStatus(currentPlayer.id, 'dead');
+            currentPlayer = nextPlayer();
+        }
+        startNewRound(currentPlayer)
+    }
+    currentNumPlayers = players.filter(p => p.lives > 0).length;
 }
 
 function claim(claim: Claim) {
@@ -76,18 +87,15 @@ function playerTurn() {
 
 function startNewRound(player: Player) {
     console.log(`Starting new round with player ${player.id}`);
-    if (player.lives <= 0) {
-        alert(`Player ${player.id} has been eliminated!`);
-        currentNumPlayers -= 1;
-    }
     if (players.filter(p => p.lives > 0).length == 1) {
         alert('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
     }
     players.forEach((p) => {
         if (p.lives > 0) {
-            diceVals[p.id] = util.roll5dice();
+            p.dice = util.roll5dice();
+            console.log(`Player ${p.id} rolled: ${diceVals[p.id]}`);
         } else {
-            diceVals[p.id] = [0, 0, 0, 0, 0];
+            p.dice = [0, 0, 0, 0, 0];
         }
         if (p.id == 0) {
             doc.updatePlayerSection(p, false, true);
@@ -101,34 +109,9 @@ function startNewRound(player: Player) {
     nextTurn();
 }
 
-function createGameChoices() {
-    console.log('Creating game choices...');
-    const numPlayersForm = document.createElement('form');
-    numPlayersForm.id = 'num-players-form';
-    for (let i = 2; i <= 8; i++) {
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.value = i.toString();
-        radio.name = 'num-players';
-        radio.id = 'num-players' + i;
-        if (i == 5) {
-            radio.checked = true;
-        }
-        const label = document.createElement('label');
-        label.textContent = `${i}`; // Add some text to the label
-        numPlayersForm.appendChild(radio);
-        numPlayersForm.appendChild(label);
-    }
-   
-    const startButton = document.createElement('button');
-    startButton.id = 'setup-game';
-    startButton.textContent = 'Start Game';
-    startButton.addEventListener('click', startGame);
-    numPlayersForm.appendChild(startButton);
-    document.body.appendChild(numPlayersForm);
-}
 
-function startGame(event: Event) {
+
+function startGame() {
     event.preventDefault();
     console.log('Starting game...');
 
@@ -143,6 +126,10 @@ function startGame(event: Event) {
     }
     console.log('diceVals: ' + diceVals());
     document.body.removeChild(numPlayersForm);
+
+    document.getElementById('player-container').style.display = 'grid';
+    document.getElementById('player-turn-section').style.display = 'grid';
+
     
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
     createPlayerSections(currentNumPlayers, diceVals[0]);
@@ -166,7 +153,7 @@ function updatePlayerTurnSection() {
     document.getElementById('claim-slider-label').textContent = slider.value;
     const doubtButton = document.getElementById('doubt-section').querySelector('button');
     doubtButton.disabled = currentClaim().count == 0;
-    doc.updateClaimEventListeners(doubt, claim, currentClaim());
+    doc.updateClaimEventListeners(claim, currentClaim());
     doc.updateClaimButton(currentClaim());
 }
 
@@ -206,6 +193,38 @@ function activatePlayerTurnSection() {
     }
 }
 
+function createGameChoices() {
+    const playerContainer = document.getElementById('player-container');
+    playerContainer.style.display = 'none';
+    document.getElementById('player-turn-section').style.display = 'none';
+
+    const numPlayersForm = doc.createElement('div', { id: 'num-players-form' }, document.body);
+
+    for (let i = 2; i <= 8; i++) {
+        const radio = doc.createElement('input', {
+            type: 'radio',
+            value: i.toString(),
+            name: 'num-players',
+            id: 'num-players' + i,
+            checked: i === 5,
+        }, numPlayersForm);
+
+        const label = doc.createElement('label', { textContent: `${i}` }, numPlayersForm);
+
+        numPlayersForm.appendChild(radio);
+        numPlayersForm.appendChild(label);
+    }
+
+    const startButton = doc.createElement('button', {
+        id: 'setup-game',
+        textContent: 'Start Game',
+        eventListeners: { click: startGame },
+    }, numPlayersForm);
+
+    startButton.addEventListener('click', startGame);
+}
+
+
 function resetClaims() {
     players.forEach(p => p.claim = {count: 0, diceVal: 0});
 }
@@ -215,7 +234,9 @@ function currentClaim() {
 }
 
 function nextPlayer() {
+    console.log('currentPlayer.id: ' + currentPlayer.id);
     let curId = (currentPlayer.id + 1) % players.length;
+    console.log('curId: ' + curId);
     while (players[curId].lives <= 0) {
         curId = (curId + 1) % players.length;
     }
@@ -224,8 +245,9 @@ function nextPlayer() {
 
 function prevPlayer() {
     let curId = (currentPlayer.id + players.length - 1) % players.length;
+    
     while (players[curId].lives <= 0) {
-        curId = (curId - 1) % players.length;
+        curId = (curId + players.length - 1) % players.length;
     }
     return players[curId];
 }
