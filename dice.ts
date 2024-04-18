@@ -3,7 +3,7 @@ import { Claim } from './types.js';
 
 window.onload = createGameChoices;
 
-let currentClaim: Claim = {count: 0, diceVal: 0};
+let currentClaim: Claim = {count: 1, diceVal: 0};
 let currentPlayer: number;
 let lives = new Array();
 let numPlayers: number;
@@ -18,7 +18,7 @@ function npcTurn() {
         const prob = probOfClaim(currentClaim, diceVals[currentPlayer], (numPlayers - 1) * 5);
         const rand = Math.random();
         if (rand > prob) {
-            console.log('Calling bluff because prob is ' + prob + ' and rand is ' + rand);
+            console.log('Doubting because prob is ' + prob + ' and rand is ' + rand);
             doubt();
         } else {
             claim(npc.npcClaim(currentClaim, diceVals[currentPlayer], numPlayers));
@@ -43,15 +43,16 @@ function doubt() {
         updatePlayerSection(i, false, true);
     }
     setTimeout(() => {
-        if (totalNumDiceOf(currentClaim.diceVal) < currentClaim.count) {
+        const tot = totalNumDiceOf(currentClaim.diceVal);
+        if (tot < currentClaim.count) {
             // Claim successful
             lives[prevPlayer()] -= 1;
-            alert('Justified call! Player ' + prevPlayer() + ' loses a life!');
+            alert('Justified call! \n Claim was [' + currentClaim.count + ' of ' + currentClaim.diceVal + '] but total was only ' + tot + '. Player ' + prevPlayer() + ' loses a life!');
             startNewRound(prevPlayer())
         } else {
             // Claim unsuccessful
             lives[currentPlayer] -= 1;
-            alert('It was not a bluff! Player ' + currentPlayer + ' loses a life!');
+            alert('Player ' + prevPlayer() + ' was correct! Player ' + currentPlayer + ' loses a life!');
             startNewRound(currentPlayer)
         }
     }, 5000);
@@ -147,6 +148,9 @@ function startGame(event: Event) {
     console.log('Number of players: ' + numPlayers);
     createPlayerSections(numPlayers, diceVals[0]);
     createPlayerTurnSection();
+
+    addEvListeners();
+
     currentPlayer = numPlayers - 1;
     nextTurn();
 };
@@ -204,7 +208,6 @@ function createPlayerTurnSection() {
         rButtLabel.appendChild(rButt);
         rButtLabel.appendChild(img);
         claimDice.appendChild(rButtLabel);
-        console.log('Adding event listener to radio button');
         rButt.addEventListener('change', () => {
             const claimCount = parseInt(slider.value);
             const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
@@ -228,13 +231,11 @@ function createPlayerTurnSection() {
         sliderLabel.textContent = slider.value;
         const claimCount = parseInt(slider.value);
         const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
-        console.log('Slider value: ' + slider.value + ' Claim value: ' + claimValue);
         claimButton.disabled = !isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
     });
     
     // Update button state when radio button value changes
     document.querySelectorAll('input[name="dice-val-claim"]').forEach(radio => {
-        console.log('Adding event listener to radio button');
         radio.addEventListener('change', () => {
             const claimCount = parseInt(slider.value);
             const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
@@ -375,6 +376,41 @@ function activatePlayerTurnSection() {
     }
 }
 
+function addEvListeners() {
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Add' || event.key === 'ArrowUp') {
+            const slider = document.getElementById('claim-slider') as HTMLInputElement;
+            const sliderValue = parseInt(slider.value);
+            if (sliderValue < parseInt(slider.max)) {
+                slider.value = (sliderValue + 1).toString();
+                // Trigger the input event manually to update the button state and label
+                slider.dispatchEvent(new Event('input'));
+            }
+        } else if (event.key === 'Minus' || event.key === 'ArrowDown') {
+            const slider = document.getElementById('claim-slider') as HTMLInputElement;
+            const sliderValue = parseInt(slider.value);
+            if (sliderValue > parseInt(slider.min)) {
+                slider.value = (sliderValue - 1).toString();
+                // Trigger the input event manually to update the button state and label
+                slider.dispatchEvent(new Event('input'));
+            }
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            const radioButtons = Array.from(document.querySelectorAll('input[type="radio"]')) as HTMLInputElement[];
+            const selectedRadioButton = radioButtons.find(radio => radio.checked);
+            if (selectedRadioButton) {
+                const selectedIndex = radioButtons.indexOf(selectedRadioButton);
+                if (event.key === 'ArrowLeft' && selectedIndex > 0) {
+                    const previousRadioButton = radioButtons[selectedIndex - 1];
+                    previousRadioButton.checked = true;
+                } else if (event.key === 'ArrowRight' && selectedIndex < radioButtons.length - 1) {
+                    const nextRadioButton = radioButtons[selectedIndex + 1];
+                    nextRadioButton.checked = true;
+                }
+            }
+        }
+    });
+}
+
 function playerDieImgId(playerNum: number, dieNum: number) {
     return 'playerDieImg-' + playerNum + '-' + dieNum;
 }
@@ -428,7 +464,4 @@ function totalNumDiceOf(diceVal: number) {
     return dice.filter(d => d == diceVal || d == 1).length;
 }
 
-function test() {
-    binomial(4,2);
-    console.log(diceVals)
-}
+function test() {}
