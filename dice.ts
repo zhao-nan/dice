@@ -5,29 +5,28 @@ import * as util from './util.js';
 
 window.onload = createGameChoices;
 
-let currentClaim: Claim = {count: 1, diceVal: 0};
 let currentPlayer: Player;
 let players : Player[] = new Array();
 let currentNumPlayers: number;
-let origNumPlayers: number;
 let playerTurnSection: HTMLElement;
 
 function npcTurn() {
     deactivatePlayerTurnSection();
     console.log(currentPlayer.id + ' is taking their turn');
     setTimeout(() => {
-        const prob = util.probOfClaim(currentClaim, diceVals[currentPlayer.id], (currentNumPlayers - 1) * 5);
+        const prob = util.probOfClaim(currentClaim(), currentPlayer.dice, (currentNumPlayers - 1) * 5);
         const rand = Math.random();
         if (rand > prob) {
             console.log(`Doubting because prob is ${prob} and rand is ${rand}`);
             doubt();
         } else {
-            claim(npc.npcClaim(currentClaim, diceVals[currentPlayer.id], currentNumPlayers));
+            claim(npc.npcClaim(currentClaim(), currentPlayer.dice, currentNumPlayers));
         }
     }, 2000);
 }
 
 function nextTurn() {
+    doc.setPlayerStatus(prevPlayer().id, 'waiting');
     currentPlayer = nextPlayer();
 
     if (currentPlayer.id == 0) {
@@ -38,42 +37,47 @@ function nextTurn() {
 }
 
 function doubt() {
-    for (let i = 0; i < origNumPlayers; i++) {
-        doc.updatePlayerSection(players[i], false, true);
+    doc.setPlayerStatus(currentPlayer.id, 'doubt');
+    for (const p of players) {
+        doc.updatePlayerSection(p, false, true);
     }
     setTimeout(() => {
-        const tot = util.totalNumDiceOf(currentClaim.diceVal, diceVals());
-        if (tot < currentClaim.count) {
+        const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
+        if (tot < currentClaim().count) {
             // Claim successful
             prevPlayer().lives -= 1;
-            alert('Justified call! \n Claim was [' + currentClaim.count + ' of ' + currentClaim.diceVal + '] but total was only ' + tot + '. Player ' + prevPlayer() + ' loses a life!');
+            alert(`Justified call! 
+                Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
+                but total was only ${tot}. Player ${prevPlayer().id} loses a life!`);
             startNewRound(prevPlayer())
         } else {
             // Claim unsuccessful
             currentPlayer.lives -= 1;
-            alert('Player ' + prevPlayer() + ' was correct! Player ' + currentPlayer + ' loses a life!');
+            alert(`Player ${prevPlayer().id} was correct: Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
+            and total was ${tot}. Player ${currentPlayer.id} loses a life!`);
             startNewRound(currentPlayer)
         }
     }, 5000);
 }
 
 function claim(claim: Claim) {
-    console.log(`Player ${currentPlayer} claiming: ${claim.count} dice of value ${claim.diceVal}`);
-    currentClaim = claim;
+    console.log(`Player ${currentPlayer.id} claiming: ${claim.count} dice of value ${claim.diceVal}`);
+    currentPlayer.claim = claim;
+    doc.setPlayerStatus(currentPlayer.id, 'claim');
     doc.updatePlayerSection(prevPlayer(), false, false);
     doc.updatePlayerSection(currentPlayer, true, false);
     nextTurn();
 }
 
 function playerTurn() {
-    updatePlayerTurnSection();
     activatePlayerTurnSection();
+    updatePlayerTurnSection();
 }
 
 function startNewRound(player: Player) {
-    console.log(`Starting new round with player ${player}`);
+    console.log(`Starting new round with player ${player.id}`);
     if (player.lives <= 0) {
-        alert('Player ' + player + ' has been eliminated!');
+        alert(`Player ${player.id} has been eliminated!`);
         currentNumPlayers -= 1;
     }
     if (players.filter(p => p.lives > 0).length == 1) {
@@ -91,9 +95,9 @@ function startNewRound(player: Player) {
             doc.updatePlayerSection(p, false, false);
         }
     });
-    currentClaim = {count: 0, diceVal: 0};
+    resetClaims();
     currentPlayer = prevPlayer();
-    console.log('currentPlayer: ' + currentPlayer);
+    console.log(`currentPlayer: ${currentPlayer.id}`);
     nextTurn();
 }
 
@@ -140,116 +144,30 @@ function startGame(event: Event) {
     console.log('diceVals: ' + diceVals());
     document.body.removeChild(numPlayersForm);
     
-    createPlayerSections(currentNumPlayers, diceVals[0]);
-    createPlayerTurnSection();
-
-    addEvListeners();
-
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
+    createPlayerSections(currentNumPlayers, diceVals[0]);
+    doc.createPlayerTurnSection(doubt, claim, currentClaim());
+
+    doc.addEvListeners();
+
+    players.forEach((p) => {doc.updatePlayerSection(p, false, false)});
+
     nextTurn();
 };
 
 
-function createPlayerTurnSection() {
-    playerTurnSection = document.createElement('section');
-    playerTurnSection.id = 'player-turn-section';
-    playerTurnSection.className = 'player-turn-section';
-
-    const doubtSection = document.createElement('section');
-    doubtSection.id = 'doubt-section';
-    doubtSection.className = 'doubt-section';
-
-    const doubtButton = document.createElement('button');
-    doubtButton.textContent = 'Doubt!';
-    doubtSection.appendChild(doubtButton);
-    doubtButton.addEventListener('click', doubt);
-    playerTurnSection.appendChild(doubtSection);
-    doubtButton.disabled = true; // Initially disabled
-
-    const claimSection = document.createElement('section');
-    claimSection.id = 'claim-section';
-    claimSection.className = 'claim-section';
-
-    // Create slider
-    const sliderDiv = document.createElement('div');
-    sliderDiv.className = 'slider-div';
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.id = 'claim-slider';
-    slider.max = (currentNumPlayers*5).toString();
-    slider.className = 'slider';
-    const sliderLabel = document.createElement('label');
-    sliderLabel.id = 'claim-slider-label';
-    sliderDiv.appendChild(sliderLabel);
-    sliderDiv.appendChild(slider);
-    claimSection.appendChild(sliderDiv);
-
-    const claimDice = document.createElement('div');
-    claimDice.className = 'claim-dice';
-
-    for (let i = 2; i <= 6; ++i) {
-        const rButtLabel = document.createElement('label');
-        const rButt = document.createElement('input');
-        rButt.type = 'radio';
-        rButt.value = i.toString();
-        rButt.name = 'dice-val-claim';
-        if (i == 2) {
-            rButt.checked = true;
-        }
-        const img = document.createElement('img');
-        img.src = util.getDiceImgSrc(i);
-        img.alt = 'Dice Value ' + i;
-        rButtLabel.appendChild(rButt);
-        rButtLabel.appendChild(img);
-        claimDice.appendChild(rButtLabel);
-        rButt.addEventListener('change', () => {
-            const claimCount = parseInt(slider.value);
-            const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
-            console.log(' Checked value: ' + claimValue);
-            claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
-        });
-    }
-    claimSection.appendChild(claimDice);
-    // Create button
-    const claimButton = document.createElement('button');
-    claimButton.textContent = 'Make Claim';
-    claimButton.disabled = true; // Initially disabled
-    claimButton.addEventListener('click', () => {
-        const claimCount = parseInt(slider.value);
-        const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
-        claim({count: claimCount, diceVal: claimValue});
-    });
-    
-    // Update button state when slider value changes
-    slider.addEventListener('input', () => {
-        sliderLabel.textContent = slider.value;
-        const claimCount = parseInt(slider.value);
-        const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
-        claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
-    });
-    
-    // Update button state when radio button value changes
-    document.querySelectorAll('input[name="dice-val-claim"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const claimCount = parseInt(slider.value);
-            const claimValue = parseInt((document.querySelector('input[name="dice-val-claim"]:checked') as HTMLInputElement).value);
-            console.log(' Checked value: ' + claimValue);
-            claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
-        });
-    });
-    claimSection.appendChild(claimButton);
-    playerTurnSection.appendChild(claimSection);
-    document.body.appendChild(playerTurnSection);
-}
 
 function updatePlayerTurnSection() {
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
-    const minVal = Math.max(currentClaim.count, 1);
+    const minVal = Math.max(currentClaim().count, 1);
     slider.min = minVal.toString();
+    slider.max = (currentNumPlayers * 5).toString();
     slider.value = minVal.toString();
     document.getElementById('claim-slider-label').textContent = slider.value;
     const doubtButton = document.getElementById('doubt-section').querySelector('button');
-    doubtButton.disabled = currentClaim.count == 0;
+    doubtButton.disabled = currentClaim().count == 0;
+    doc.updateClaimEventListeners(doubt, claim, currentClaim());
+    doc.updateClaimButton(currentClaim());
 }
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
@@ -265,8 +183,6 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
         container.appendChild(playerSection);
     }
 }
-
-
 
 function deactivatePlayerTurnSection() {
     const playerTurnSection = document.getElementById('player-turn-section');
@@ -284,45 +200,18 @@ function activatePlayerTurnSection() {
     interactiveElements.forEach(element => {
         element.removeAttribute('disabled');
     });
-    if (currentClaim.count == 0) {
+    if (currentClaim().count == 0) {
         const doubtButton = document.getElementById('doubt-section').querySelector('button');
         doubtButton.setAttribute('disabled', 'true');
     }
 }
 
-function addEvListeners() {
-    window.addEventListener('keydown', (event) => {
-        if (event.key === 'Add' || event.key === 'ArrowUp') {
-            const slider = document.getElementById('claim-slider') as HTMLInputElement;
-            const sliderValue = parseInt(slider.value);
-            if (sliderValue < parseInt(slider.max)) {
-                slider.value = (sliderValue + 1).toString();
-                // Trigger the input event manually to update the button state and label
-                slider.dispatchEvent(new Event('input'));
-            }
-        } else if (event.key === 'Minus' || event.key === 'ArrowDown') {
-            const slider = document.getElementById('claim-slider') as HTMLInputElement;
-            const sliderValue = parseInt(slider.value);
-            if (sliderValue > parseInt(slider.min)) {
-                slider.value = (sliderValue - 1).toString();
-                // Trigger the input event manually to update the button state and label
-                slider.dispatchEvent(new Event('input'));
-            }
-        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-            const radioButtons = Array.from(document.querySelectorAll('input[type="radio"]')) as HTMLInputElement[];
-            const selectedRadioButton = radioButtons.find(radio => radio.checked);
-            if (selectedRadioButton) {
-                const selectedIndex = radioButtons.indexOf(selectedRadioButton);
-                if (event.key === 'ArrowLeft' && selectedIndex > 0) {
-                    const previousRadioButton = radioButtons[selectedIndex - 1];
-                    previousRadioButton.checked = true;
-                } else if (event.key === 'ArrowRight' && selectedIndex < radioButtons.length - 1) {
-                    const nextRadioButton = radioButtons[selectedIndex + 1];
-                    nextRadioButton.checked = true;
-                }
-            }
-        }
-    });
+function resetClaims() {
+    players.forEach(p => p.claim = {count: 0, diceVal: 0});
+}
+
+function currentClaim() {
+    return prevPlayer().claim;
 }
 
 function nextPlayer() {
@@ -334,7 +223,7 @@ function nextPlayer() {
 }
 
 function prevPlayer() {
-    let curId = (currentPlayer.id - 1) % players.length;
+    let curId = (currentPlayer.id + players.length - 1) % players.length;
     while (players[curId].lives <= 0) {
         curId = (curId - 1) % players.length;
     }

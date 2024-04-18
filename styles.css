@@ -67,14 +67,36 @@ body {
     justify-content: center;
 }
 
-.player-claim {
+.player-activity {
     display: flex;
     flex-direction: row;
     justify-content: center;
     font-size: 50px;
     font-weight: bold;
+    margin: auto;
     gap: 20px;
+}
+
+.player-claim {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+}
+
+.player-status {
+    font-size: medium;
+}
+
+.player-activity[status="waiting"] {
     background-color: lightgreen;
+}
+
+.player-activity[status="claim"] {
+    background-color: lightblue;
+}
+.player-activity[status="doubt"] {
+    background-color: orange;
 }
 
 .player-claim img {

@@ -14,16 +14,32 @@ export function createPlayerSection(i: number) {
         style: `--i: ${(i+1.5).toString()}`
     }, document.body);
 
+    createElement('label', {
+        textContent: 'Player ' + i,
+        className: 'player-label'
+    }, playerSection);
+
     createElement('img', {
         src: `img/player${i}.png`,
         className: 'player-icon',
         width: 100
     }, playerSection);
 
-    const playerClaim = createElement('div', {
+    const playerActivity = createElement('span', {
+        className: 'player-activity',
+        id: `player-activity${i}`
+    }, playerSection);
+
+    createElement('label', {
+        textContent: 'Waiting',
+        className: 'player-status',
+        id: `player-status${i}`
+    }, playerActivity);
+
+    const playerClaim = createElement('span', {
         className: 'player-claim',
         id: `player-claim${i}`
-    }, playerSection);
+    }, playerActivity);
 
     createElement('span', {
         id: `player-claim-val${i}`
@@ -34,6 +50,7 @@ export function createPlayerSection(i: number) {
     }, playerClaim);
 
     createElement('div', {
+        id: `dice-container${i}`,
         className: 'dice-container'
     }, playerSection);
 
@@ -43,19 +60,19 @@ export function createPlayerSection(i: number) {
     }, playerSection);
 
     for (let j = 1; j <= 5; j++) {
-        const lifeImg = createElement('img', {
-            id: `life${i}-${j}`,
-            className: 'life-img',
-            src: 'img/life.png'
-        }, document.getElementById(`lives-container${i}`));
+        createElement('img', {
+            id: util.playerDieImgId(i, j),
+            className: 'player-die-img',
+        }, document.getElementById(`dice-container${i}`));
     }
 
     return playerSection;
 }
 
-function drawLives(i: number, livesContainer: HTMLDivElement) {
-    console.log('Drawing ' + i + ' lives');
-    for (let j = 1; j <= i; j++) {
+function drawLives(player: Player) {
+    const livesContainer = document.getElementById('lives-container' + player.id) as HTMLDivElement;
+    livesContainer.innerHTML = '';
+    for (let j = 1; j <= player.lives; j++) {
         const lifeImg = document.createElement('img');
         lifeImg.src = 'img/life.png';
         lifeImg.width = 20;
@@ -90,8 +107,165 @@ export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boo
             resultImg.src = 'img/qm.png';
         }
     }
-    // redraw lives
-    const livesContainer = document.getElementById('lives-container' + p.id) as HTMLDivElement;
-    livesContainer.innerHTML = '';
-    drawLives(p.lives, livesContainer);
+    
+    drawLives(p);
+}
+
+export function setPlayerStatus(playerNum: number, status: string) {
+    const activity = document.getElementById('player-activity' + playerNum);
+    activity.setAttribute('status', status);
+    const statusLabel = document.getElementById('player-status' + playerNum);
+    statusLabel.textContent = status;
+}
+
+export function updateClaimEventListeners(doubt: () => void, claim: (Claim) => void, currentClaim: Claim) {
+
+    const claimButton = document.getElementById('claim-button');
+    const slider = document.getElementById('claim-slider') as HTMLInputElement;
+    const label = document.getElementById('claim-slider-label');
+    const radioButtons = document.querySelectorAll('input[name="dice-val-claim"]');
+
+    radioButtons.forEach((radio) => {
+        const clone = radio.cloneNode(true);
+        radio.parentNode.replaceChild(clone, radio);
+    });
+
+    // Remove old event listeners
+    claimButton.replaceWith(claimButton.cloneNode(true));
+    slider.replaceWith(slider.cloneNode(true));
+
+    // Get fresh references after cloning
+    const newClaimButton: HTMLButtonElement = document.getElementById('claim-button') as HTMLButtonElement;
+    const newSlider = document.getElementById('claim-slider') as HTMLInputElement;
+
+    newClaimButton.addEventListener('click', () => {
+        const claimCount = parseInt(newSlider.value);
+        const claimValue = getClaimDiceVal();
+        claim({count: claimCount, diceVal: claimValue});
+    });
+
+    newSlider.addEventListener('input', () => {
+        label.textContent = newSlider.value;
+        updateClaimButton(currentClaim);
+    });
+    
+    // Update button state when radio button value changes
+    document.querySelectorAll('input[name="dice-val-claim"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            updateClaimButton(currentClaim);
+        });
+    });
+}
+
+export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => void, currentClaim: Claim) {
+    const playerTurnSection = document.getElementById('player-turn-section');
+    const doubtSection = createElement('section', {
+        id: 'doubt-section',
+        className: 'doubt-section'
+    }, playerTurnSection);
+
+    const doubtButton = createElement('button', {
+        textContent: 'Doubt!',
+        disabled: true
+    }, doubtSection);
+    doubtButton.addEventListener('click', doubt);
+
+    const claimSection = createElement('section', {
+        id: 'claim-section',
+        className: 'claim-section'
+    }, playerTurnSection);
+
+    const sliderDiv = createElement('div', {
+        className: 'slider-div'
+    }, claimSection);
+
+    createElement('input', {
+        type: 'range',
+        id: 'claim-slider',
+        className: 'slider'
+    }, sliderDiv);
+
+    createElement('label', {
+        id: 'claim-slider-label'
+    }, sliderDiv);
+
+    const claimDice = document.createElement('div');
+    claimDice.className = 'claim-dice';
+
+    for (let i = 2; i <= 6; ++i) {
+        const rButtLabel = document.createElement('label');
+        const rButt = createElement('input', {
+            type: 'radio',
+            value: i.toString(),
+            name: 'dice-val-claim'
+        }, rButtLabel);
+        if (i == 2) {
+            rButt.checked = true;
+        }
+        createElement('img', {
+            src: util.getDiceImgSrc(i)
+        }, rButtLabel);
+        claimDice.appendChild(rButtLabel);
+        rButt.addEventListener('change', () => {
+            updateClaimButton(currentClaim);
+        });
+    }
+    claimSection.appendChild(claimDice);
+
+    const claimButton = createElement('button', {
+        id: 'claim-button',
+        textContent: 'Make Claim',
+        disabled: true
+    }, claimSection);
+
+    playerTurnSection.appendChild(claimSection);
+    return playerTurnSection;
+}
+
+export function updateClaimButton(currentClaim: Claim) {
+    const slider = document.getElementById('claim-slider') as HTMLInputElement;
+    const claimCount = parseInt(slider.value);
+    const claimValue = getClaimDiceVal();
+    const claimButton = document.getElementById('claim-button') as HTMLButtonElement;
+    claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
+}
+
+export function addEvListeners() {
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Add' || event.key === 'ArrowUp') {
+            const slider = document.getElementById('claim-slider') as HTMLInputElement;
+            const sliderValue = parseInt(slider.value);
+            if (sliderValue < parseInt(slider.max)) {
+                slider.value = (sliderValue + 1).toString();
+                // Trigger the input event manually to update the button state and label
+                slider.dispatchEvent(new Event('input'));
+            }
+        } else if (event.key === 'Minus' || event.key === 'ArrowDown') {
+            const slider = document.getElementById('claim-slider') as HTMLInputElement;
+            const sliderValue = parseInt(slider.value);
+            if (sliderValue > parseInt(slider.min)) {
+                slider.value = (sliderValue - 1).toString();
+                // Trigger the input event manually to update the button state and label
+                slider.dispatchEvent(new Event('input'));
+            }
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            const radioButtons: HTMLInputElement[] = Array.from(document.querySelectorAll('input[type="radio"]')) ;
+            const selectedRadioButton = radioButtons.find(radio => radio.checked);
+            if (selectedRadioButton) {
+                const selectedIndex = radioButtons.indexOf(selectedRadioButton);
+                if (event.key === 'ArrowLeft' && selectedIndex > 0) {
+                    const previousRadioButton = radioButtons[selectedIndex - 1];
+                    previousRadioButton.checked = true;
+                } else if (event.key === 'ArrowRight' && selectedIndex < radioButtons.length - 1) {
+                    const nextRadioButton = radioButtons[selectedIndex + 1];
+                    nextRadioButton.checked = true;
+                }
+            }
+        }
+    });
+}
+
+export function getClaimDiceVal() {
+    const rButt: HTMLInputElement = document.querySelector('input[name="dice-val-claim"]:checked');
+    return parseInt(rButt.value);
 }
