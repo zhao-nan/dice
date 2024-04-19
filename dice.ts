@@ -45,22 +45,23 @@ function doubt() {
     const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
     if (tot < currentClaim().count) {
         // Claim successful
-        prevPlayer().lives -= 1;
+        let pp = prevPlayer();
         alert(`Justified call! 
-            Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
-            but total was only ${tot}. Player ${prevPlayer().id} loses a life!`);
-        if (prevPlayer().lives <= 0) {
-            alert(`Player ${prevPlayer().id} has been eliminated!`);
-            doc.setPlayerStatus(prevPlayer().id, 'dead');
+        Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
+        but total was only ${tot}. Player ${pp.id} loses a life!`);
+        pp.lives -= 1;
+        if (pp.lives <= 0) {
+            alert(`Player ${pp.id} has been eliminated!`);
+            doc.setPlayerStatus(pp.id, 'dead');
             console.log('currentNumPlayers: ' + currentNumPlayers);
         }
         currentPlayer = prevPlayer();
         startNewRound(prevPlayer())
     } else {
         // Claim unsuccessful
-        currentPlayer.lives -= 1;
         alert(`Player ${prevPlayer().id} was correct: Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
         and total was ${tot}. Player ${currentPlayer.id} loses a life!`);
+        currentPlayer.lives -= 1;
         if (currentPlayer.lives <= 0) {
             alert(`Player ${currentPlayer.id} has been eliminated!`);
             doc.setPlayerStatus(currentPlayer.id, 'dead');
