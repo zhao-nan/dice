@@ -83,9 +83,7 @@ function drawLives(player: Player) {
 
 export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boolean) {
     const playerSection = document.getElementById('player' + p.id);
-    if (p.lives <= 0) {
-        playerSection.setAttribute('class', 'player-section dead');
-    }
+
     const playerClaimVal = document.getElementById('player-claim-val' + p.id) as HTMLSpanElement;
     if (playerClaimVal == null) {
         console.log('Player claim val is null: ' + 'player-claim-val' + p.id);
@@ -159,6 +157,7 @@ export function updateClaimEventListeners(claim: (Claim) => void, currentClaim: 
 
 export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => void, currentClaim: Claim) {
     const playerTurnSection = document.getElementById('player-turn-section');
+    playerTurnSection.innerHTML = '';
     const doubtSection = createElement('section', {
         id: 'doubt-section',
         className: 'doubt-section'
@@ -219,7 +218,7 @@ export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => voi
     }, claimSection);
 
     playerTurnSection.appendChild(claimSection);
-    return playerTurnSection;
+    playerTurnSection.style.display = 'grid';
 }
 
 export function updateClaimButton(currentClaim: Claim) {

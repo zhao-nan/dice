@@ -90,24 +90,26 @@ function startNewRound(player: Player) {
     console.log(`Starting new round with player ${player.id}`);
     if (players.filter(p => p.lives > 0).length == 1) {
         alert('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
+        endGame();
+    } else {
+        players.forEach((p) => {
+            if (p.lives > 0) {
+                p.dice = util.roll5dice();
+                console.log(`Player ${p.id} rolled: ${diceVals[p.id]}`);
+            } else {
+                p.dice = [0, 0, 0, 0, 0];
+            }
+            if (p.id == 0) {
+                doc.updatePlayerSection(p, false, true);
+            } else {
+                doc.updatePlayerSection(p, false, false);
+            }
+        });
+        resetClaims();
+        currentPlayer = prevPlayer();
+        console.log(`currentPlayer: ${currentPlayer.id}`);
+        nextTurn();
     }
-    players.forEach((p) => {
-        if (p.lives > 0) {
-            p.dice = util.roll5dice();
-            console.log(`Player ${p.id} rolled: ${diceVals[p.id]}`);
-        } else {
-            p.dice = [0, 0, 0, 0, 0];
-        }
-        if (p.id == 0) {
-            doc.updatePlayerSection(p, false, true);
-        } else {
-            doc.updatePlayerSection(p, false, false);
-        }
-    });
-    resetClaims();
-    currentPlayer = prevPlayer();
-    console.log(`currentPlayer: ${currentPlayer.id}`);
-    nextTurn();
 }
 
 
@@ -129,8 +131,6 @@ function startGame() {
     document.body.removeChild(numPlayersForm);
 
     document.getElementById('player-container').style.display = 'grid';
-    document.getElementById('player-turn-section').style.display = 'grid';
-
     
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
     createPlayerSections(currentNumPlayers, diceVals[0]);
@@ -143,7 +143,13 @@ function startGame() {
     nextTurn();
 };
 
-
+function endGame() {
+    const playerContainer = document.getElementById('player-container');
+    playerContainer.innerHTML = '';
+    playerContainer.style.display = 'none';
+    document.getElementById('player-turn-section').style.display = 'none';
+    createGameChoices();
+}
 
 function updatePlayerTurnSection() {
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
