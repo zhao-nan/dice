@@ -165,16 +165,13 @@ function updatePlayerTurnSection() {
 }
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
-    const tan = Math.tan(Math.PI / numPlayers);
-    const container = document.getElementById('player-container');
-    container.style.setProperty('--m', numPlayers.toString());
-    container.style.setProperty('--tan', tan.toFixed(2));
-    container.style.setProperty('--img-size', '100px');
+    // const tan = Math.tan(Math.PI / numPlayers);
+    // const container = document.getElementById('player-container');
+    // container.style.setProperty('--m', numPlayers.toString());
+    // container.style.setProperty('--tan', tan.toFixed(2));
+    // container.style.setProperty('--img-size', '100px');
     for (let i = 0; i < numPlayers; i++) {
-        const playerSection = doc.createPlayerSection(i);
-
-        
-        container.appendChild(playerSection);
+        doc.createPlayerSection(i);
     }
 }
 

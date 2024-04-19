@@ -1,7 +1,7 @@
 /* styles.css */
 body {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -15,56 +15,17 @@ body {
     margin: 0 5px;
 }
 
-.playerContainer {
-    /* how much extra space we want between images, 1 = one image size */
-    --rel: 2;
-    /* circle radius */
-    --r: calc(.75*(1 + var(--rel))*var(--img-size)/var(--tan));
-    /* container size */
-    --s: calc(3*var(--r) + var(--img-size));
-    position: relative;
-    width: var(--s);
-    height: var(--s);
-    background: silver;
+#player-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.playerContainer section {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: calc(-.5*var(--img-size));
-    width: var(--img-size);
-    height: var(--img-size);
-    --az: calc(var(--i)*1turn/var(--m));
-    transform: rotate(var(--az)) translate(var(--r)) rotate(calc(-1*var(--az)));
-}
-
-.life-img {
-    width: 20px;
-    height: 20px;
-}
-
-.player-turn-section {
+#npc-container {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center;
-    background-color: lightblue;
-    border: solid 2px black;
-    padding: 20px;
-}
-
-#player-turn-section[active="false"] {
-    background-color: lightgray;
-}
-
-#player-turn-section[active="false"] .claim-section{
-    background-color: lightgray;
-}
-
-.dice-container {
-    display: flex;
-    justify-content: center;
+    gap: 50px;
 }
 
 .player-activity {
@@ -74,13 +35,6 @@ body {
     font-size: 50px;
     font-weight: bold;
     margin: auto;
-    gap: 20px;
-}
-
-.player-claim {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
     gap: 20px;
 }
 
@@ -105,14 +59,45 @@ body {
     display: none;
 }
 
-.player-claim img {
-    width: 50px;
-    height: 50px;
-}
-
 .player-icon {
     border: solid 2px teal;
     border-radius: 5%;
+}
+
+.life-img {
+    width: 20px;
+    height: 20px;
+}
+
+.player-turn-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: lightblue;
+    border: solid 2px black;
+    padding: 20px;
+}
+
+#player-turn-section[active="false"], #player-turn-section[active="false"] * {
+    background-color: lightgray;
+}
+
+.dice-container {
+    display: flex;
+    justify-content: center;
+}
+
+.player-claim {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+}
+
+.player-claim img {
+    width: 50px;
+    height: 50px;
 }
 
 .doubt-section button {
@@ -169,17 +154,17 @@ button:disabled {
     opacity: 0;
     width: 0;
     height: 0;
-  }
-  
-  /* IMAGE STYLES */
-  [type=radio] + img {
+}
+
+/* IMAGE STYLES */
+[type=radio] + img {
     cursor: pointer;
-  }
-  
-  /* CHECKED STYLES */
-  [type=radio]:checked + img {
+}
+
+/* CHECKED STYLES */
+[type=radio]:checked + img {
     outline: 2px solid #f00;
-  }
+}
 
 button {
     margin-right: 20px;

@@ -9,10 +9,16 @@ export function createElement(type, props, parent) {
 }
 
 export function createPlayerSection(i: number) {
+
+    const container = i === 0 ?
+     document.getElementById('player-container') :
+     document.getElementById('npc-container');
+
+
     const playerSection = createElement('section', {
         id: `player${i}`,
         style: `--i: ${(i+1.5).toString()}`
-    }, document.body);
+    }, container);
 
     createElement('label', {
         textContent: 'Player ' + i,
@@ -82,8 +88,6 @@ function drawLives(player: Player) {
 }
 
 export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boolean) {
-    const playerSection = document.getElementById('player' + p.id);
-
     const playerClaimVal = document.getElementById('player-claim-val' + p.id) as HTMLSpanElement;
     if (playerClaimVal == null) {
         console.log('Player claim val is null: ' + 'player-claim-val' + p.id);
@@ -211,7 +215,7 @@ export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => voi
     }
     claimSection.appendChild(claimDice);
 
-    const claimButton = createElement('button', {
+    createElement('button', {
         id: 'claim-button',
         textContent: 'Make Claim',
         disabled: true
