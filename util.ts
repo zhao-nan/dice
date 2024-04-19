@@ -26,8 +26,8 @@ export function probOfAtLeast(k: number, n: number) {
 
 export function binomial(n: number, k: number) {
     let coeff = 1;
-    for (var x = n - k + 1; x <= n; x++) coeff *= x;
-    for (x = 1; x <= k; x++) coeff /= x;
+    for (let x = n - k + 1; x <= n; x++) coeff *= x;
+    for (let x = 1; x <= k; x++) coeff /= x;
     return coeff;
 }
 
@@ -42,4 +42,16 @@ export function totalNumDiceOf(diceVal: number, diceVals: number[][]) {
 
 export function playerDieImgId(playerNum: number, dieNum: number) {
     return 'playerDieImg-' + playerNum + '-' + dieNum;
-} 
+}
+
+export function getDiceSymbol(num: number): string {
+    switch(num) {
+        case 1: return '\u2680'; // Unicode for die face 1
+        case 2: return '\u2681'; // Unicode for die face 2
+        case 3: return '\u2682'; // Unicode for die face 3
+        case 4: return '\u2683'; // Unicode for die face 4
+        case 5: return '\u2684'; // Unicode for die face 5
+        case 6: return '\u2685'; // Unicode for die face 6
+        default: return ''; // Return an empty string for invalid input
+    }
+}

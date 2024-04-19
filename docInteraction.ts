@@ -8,16 +8,26 @@ export function createElement(type, props, parent) {
     return element;
 }
 
+export function activateInfoSection(text: string) {
+    const infoSection = document.getElementById('info-section');
+    infoSection.textContent = text;
+}
+
+export function setInfoMsg(text: string) {
+    const infoSection = document.getElementById('info-section');
+    infoSection.textContent = text;
+}
+
 export function createPlayerSection(i: number) {
 
     const container = i === 0 ?
      document.getElementById('player-container') :
      document.getElementById('npc-container');
 
-
     const playerSection = createElement('section', {
         id: `player${i}`,
-        style: `--i: ${(i+1.5).toString()}`
+        style: `--i: ${(i+1.5).toString()}`,
+        className: 'player-section'
     }, container);
 
     createElement('label', {
@@ -96,14 +106,18 @@ export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boo
     const playerClaimDie = document.getElementById('player-claim-die' + p.id) as HTMLImageElement;
     if (showClaim) {
         playerClaimVal.textContent = p.claim.count.toString();
+        playerClaimVal.style.display = 'inline';
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
+        playerClaimDie.style.display = 'inline';
     } else {
-        playerClaimVal.textContent = '';
-        playerClaimDie.src = '';
+        playerClaimVal.style.display = 'none';
+        playerClaimDie.style.display = 'none';
     }
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i)) as HTMLImageElement;
-        if (showDice || p.id == 0) {
+        if (p.lives <= 0) {
+            resultImg.style.display = 'none';
+        } else if (showDice || p.id == 0) {
             resultImg.src = util.getDiceImgSrc(p.dice[i-1]);
         } else {
             resultImg.src = 'img/qm.png';

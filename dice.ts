@@ -37,39 +37,38 @@ function nextTurn() {
 }
 
 function doubt() {
+    doc.activateInfoSection("DOUBT");
     doc.setPlayerStatus(currentPlayer.id, 'doubt');
     for (const p of players) {
         doc.updatePlayerSection(p, false, true);
     }
-
-    const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
-    if (tot < currentClaim().count) {
-        // Claim successful
-        let pp = prevPlayer();
-        alert(`Justified call! 
-        Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
-        but total was only ${tot}. Player ${pp.id} loses a life!`);
-        pp.lives -= 1;
-        if (pp.lives <= 0) {
-            alert(`Player ${pp.id} has been eliminated!`);
-            doc.setPlayerStatus(pp.id, 'dead');
-            console.log('currentNumPlayers: ' + currentNumPlayers);
+    setTimeout(() => {
+        const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
+        if (tot < currentClaim().count) {
+            // Claim successful
+            let pp = prevPlayer();
+            doc.setInfoMsg(justifiedCallMsg(pp, tot));
+            pp.lives -= 1;
+            if (pp.lives <= 0) {
+                doc.setInfoMsg(elimMsg(pp));
+                doc.setPlayerStatus(pp.id, 'dead');
+                console.log('currentNumPlayers: ' + currentNumPlayers);
+            }
+            currentPlayer = prevPlayer();
+            startNewRound(prevPlayer())
+        } else {
+            // Claim unsuccessful
+            doc.setInfoMsg(noDoubtMsg(tot));
+            currentPlayer.lives -= 1;
+            if (currentPlayer.lives <= 0) {
+                doc.setInfoMsg(elimMsg(currentPlayer));
+                doc.setPlayerStatus(currentPlayer.id, 'dead');
+                currentPlayer = nextPlayer();
+            }
+            startNewRound(currentPlayer)
         }
-        currentPlayer = prevPlayer();
-        startNewRound(prevPlayer())
-    } else {
-        // Claim unsuccessful
-        alert(`Player ${prevPlayer().id} was correct: Claim was [${currentClaim().count} of ${currentClaim().diceVal}]
-        and total was ${tot}. Player ${currentPlayer.id} loses a life!`);
-        currentPlayer.lives -= 1;
-        if (currentPlayer.lives <= 0) {
-            alert(`Player ${currentPlayer.id} has been eliminated!`);
-            doc.setPlayerStatus(currentPlayer.id, 'dead');
-            currentPlayer = nextPlayer();
-        }
-        startNewRound(currentPlayer)
-    }
-    currentNumPlayers = players.filter(p => p.lives > 0).length;
+        currentNumPlayers = players.filter(p => p.lives > 0).length;
+    }, 3000);
 }
 
 function claim(claim: Claim) {
@@ -87,9 +86,9 @@ function playerTurn() {
 }
 
 function startNewRound(player: Player) {
-    console.log(`Starting new round with player ${player.id}`);
+    console.log(`Starting new round with ${currentNumPlayers} players! Starting: player ${player.id}`);
     if (players.filter(p => p.lives > 0).length == 1) {
-        alert('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
+        doc.setInfoMsg('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
         endGame();
     } else {
         players.forEach((p) => {
@@ -116,7 +115,7 @@ function startNewRound(player: Player) {
 
 function startGame() {
     event.preventDefault();
-    console.log('Starting game...');
+    doc.activateInfoSection('Starting game...');
 
     const numPlayersForm = document.getElementById('num-players-form') as HTMLFormElement;
 
@@ -131,6 +130,7 @@ function startGame() {
     document.body.removeChild(numPlayersForm);
 
     document.getElementById('player-container').style.display = 'grid';
+    document.getElementById('info-section').style.display = 'block';
     
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
     createPlayerSections(currentNumPlayers, diceVals[0]);
@@ -165,11 +165,6 @@ function updatePlayerTurnSection() {
 }
 
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
-    // const tan = Math.tan(Math.PI / numPlayers);
-    // const container = document.getElementById('player-container');
-    // container.style.setProperty('--m', numPlayers.toString());
-    // container.style.setProperty('--tan', tan.toFixed(2));
-    // container.style.setProperty('--img-size', '100px');
     for (let i = 0; i < numPlayers; i++) {
         doc.createPlayerSection(i);
     }
@@ -201,6 +196,7 @@ function createGameChoices() {
     const playerContainer = document.getElementById('player-container');
     playerContainer.style.display = 'none';
     document.getElementById('player-turn-section').style.display = 'none';
+    document.getElementById('info-section').style.display = 'none';
 
     const numPlayersForm = doc.createElement('div', { id: 'num-players-form' }, document.body);
 
@@ -260,3 +256,20 @@ function diceVals() {
     let diceVals = Array.from({length: players.length}, (_, i) => players[i].dice);
     return diceVals;
 }
+
+function justifiedCallMsg(pp: Player, tot: number) {
+    return `Justified call! 
+        Claim was [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]
+        but total was only ${tot}. Player ${pp.id} loses a life!`;
+}
+
+function noDoubtMsg(tot: number) {
+    return `Player ${prevPlayer().id} was correct: 
+    Claim was [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]
+    and total was ${tot}. Player ${currentPlayer.id} loses a life!`
+}
+
+function elimMsg(pp: Player) {
+    return `Player ${pp.id} has been eliminated!`;
+}
+
