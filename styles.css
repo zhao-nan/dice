@@ -7,6 +7,11 @@ body {
     height: 100vh;
     background-color: #f0f0f0;
     font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 .info-section {

@@ -12,7 +12,6 @@ let currentNumPlayers: number;
 
 function npcTurn() {
     deactivatePlayerTurnSection();
-    console.log(currentPlayer.id + ' is taking their turn');
     setTimeout(() => {
         const prob = util.probOfClaim(currentClaim(), currentPlayer.dice, (currentNumPlayers - 1) * 5);
         const rand = Math.random();
@@ -52,10 +51,11 @@ function doubt() {
             if (pp.lives <= 0) {
                 doc.setInfoMsg(elimMsg(pp));
                 doc.setPlayerStatus(pp.id, 'dead');
-                console.log('currentNumPlayers: ' + currentNumPlayers);
             }
             currentPlayer = prevPlayer();
-            startNewRound(prevPlayer())
+            setTimeout(() => {
+                startNewRound(prevPlayer())
+            }, 3000);
         } else {
             // Claim unsuccessful
             doc.setInfoMsg(noDoubtMsg(tot));
@@ -65,14 +65,15 @@ function doubt() {
                 doc.setPlayerStatus(currentPlayer.id, 'dead');
                 currentPlayer = nextPlayer();
             }
-            startNewRound(currentPlayer)
+            setTimeout(() => {
+                startNewRound(currentPlayer)
+            }, 3000);
         }
         currentNumPlayers = players.filter(p => p.lives > 0).length;
-    }, 3000);
+    }, 2000);
 }
 
 function claim(claim: Claim) {
-    console.log(`Player ${currentPlayer.id} claiming: ${claim.count} dice of value ${claim.diceVal}`);
     currentPlayer.claim = claim;
     doc.setPlayerStatus(currentPlayer.id, 'claim');
     doc.updatePlayerSection(prevPlayer(), false, false);
@@ -94,7 +95,6 @@ function startNewRound(player: Player) {
         players.forEach((p) => {
             if (p.lives > 0) {
                 p.dice = util.roll5dice();
-                console.log(`Player ${p.id} rolled: ${diceVals[p.id]}`);
             } else {
                 p.dice = [0, 0, 0, 0, 0];
             }
@@ -106,7 +106,6 @@ function startNewRound(player: Player) {
         });
         resetClaims();
         currentPlayer = prevPlayer();
-        console.log(`currentPlayer: ${currentPlayer.id}`);
         nextTurn();
     }
 }
@@ -126,7 +125,6 @@ function startGame() {
     for (let i = 0; i < currentNumPlayers; i++) {
         players.push({id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: util.roll5dice()});
     }
-    console.log('diceVals: ' + diceVals());
     document.body.removeChild(numPlayersForm);
 
     document.getElementById('player-container').style.display = 'grid';
@@ -234,9 +232,7 @@ function currentClaim() {
 }
 
 function nextPlayer() {
-    console.log('currentPlayer.id: ' + currentPlayer.id);
     let curId = (currentPlayer.id + 1) % players.length;
-    console.log('curId: ' + curId);
     while (players[curId].lives <= 0) {
         curId = (curId + 1) % players.length;
     }

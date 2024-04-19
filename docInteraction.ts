@@ -245,6 +245,7 @@ export function updateClaimButton(currentClaim: Claim) {
     const claimValue = getClaimDiceVal();
     const claimButton = document.getElementById('claim-button') as HTMLButtonElement;
     claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
+    claimButton.focus();
 }
 
 export function addEvListeners() {

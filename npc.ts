@@ -1,20 +1,17 @@
 import { Claim } from './types';
 
 export function npcClaim(currentClaim: Claim, ownDice: number[], playerCount: number) : Claim{
-    console.log('ownDice:', ownDice);
     let freqs = Array.from({ length: 7 }, (_, i) => ownDice.filter(num => num === i).length);
     for (let i = 2; i <= 6; i++) {
         freqs[i] += freqs[1];
     }
     freqs[1] = 0;
-    console.log('freqs:', freqs);
     const { maxVal, idx: favorite } = 
         freqs.reduce((acc, val, i) => 
             val > acc.maxVal ? 
             { maxVal: val, idx: i } : 
             acc, { maxVal: -Infinity, idx: -1 });
     
-    console.log(`NPC's favorite number is ${favorite}`);
 
     let retClaim: Claim;
 
