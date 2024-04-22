@@ -13,13 +13,11 @@ let currentNumPlayers: number;
 function npcTurn() {
     deactivatePlayerTurnSection();
     setTimeout(() => {
-        const prob = util.probOfClaim(currentClaim(), currentPlayer.dice, (currentNumPlayers - 1) * 5);
-        const rand = Math.random();
-        if (rand > prob) {
-            console.log(`Doubting because prob is ${prob} and rand is ${rand}`);
+        let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, currentNumPlayers);
+        if (c.count == 0) {
             doubt();
         } else {
-            claim(npc.npcClaim(currentClaim(), currentPlayer.dice, currentNumPlayers));
+            claim(c);
         }
     }, 1000);
 }
