@@ -144,6 +144,8 @@ function startGame() {
 function endGame() {
     const playerContainer = document.getElementById('player-container');
     playerContainer.innerHTML = '';
+    const npcSection = document.getElementById('npc-section');
+    npcSection.innerHTML = '';
     playerContainer.style.display = 'none';
     document.getElementById('player-turn-section').style.display = 'none';
     createGameChoices();
