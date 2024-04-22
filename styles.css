@@ -61,10 +61,15 @@ body {
     align-items: center;
     gap: 5px;
     margin-top: 20px;
-    background-color: rosybrown;
+    background-color: rgb(122, 107, 255);
     border: solid 2px black;
     border-radius: 100px;
     padding: 20px;
+    font-size: 25px;
+}
+
+.player-section>img {
+    height: 100px;
 }
 
 #player-container .player-section {

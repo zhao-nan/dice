@@ -88,13 +88,7 @@ export function createPlayerSection(i: number) {
 function drawLives(player: Player) {
     const livesContainer = document.getElementById('lives-container' + player.id) as HTMLDivElement;
     livesContainer.innerHTML = '';
-    for (let j = 1; j <= player.lives; j++) {
-        const lifeImg = document.createElement('img');
-        lifeImg.src = 'img/life.png';
-        lifeImg.width = 20;
-        lifeImg.className = 'life-img';
-        livesContainer.appendChild(lifeImg);
-    }
+    livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
 
 export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boolean) {
