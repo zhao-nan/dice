@@ -8,11 +8,6 @@ export function createElement(type, props, parent) {
     return element;
 }
 
-export function activateInfoSection(text: string) {
-    const infoSection = document.getElementById('info-section');
-    infoSection.textContent = text;
-}
-
 export function setInfoMsg(text: string) {
     const infoSection = document.getElementById('info-section');
     infoSection.textContent = text;

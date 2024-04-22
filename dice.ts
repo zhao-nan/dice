@@ -36,7 +36,7 @@ function nextTurn() {
 }
 
 function doubt() {
-    doc.activateInfoSection("DOUBT");
+    doc.setInfoMsg(initialDoubtMsg());
     doc.setPlayerStatus(currentPlayer.id, 'doubt');
     for (const p of players) {
         doc.updatePlayerSection(p, false, true);
@@ -114,7 +114,7 @@ function startNewRound(player: Player) {
 
 function startGame() {
     event.preventDefault();
-    doc.activateInfoSection('Starting game...');
+    doc.setInfoMsg('Starting game...');
 
     const numPlayersForm = document.getElementById('num-players-form') as HTMLFormElement;
 
@@ -253,6 +253,10 @@ function prevPlayer() {
 function diceVals() {
     let diceVals = Array.from({length: players.length}, (_, i) => players[i].dice);
     return diceVals;
+}
+
+function initialDoubtMsg() {
+    return `Player ${currentPlayer.id} doubts Player ${prevPlayer().id}'s claim of [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]!`
 }
 
 function justifiedCallMsg(pp: Player, tot: number) {
