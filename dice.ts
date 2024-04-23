@@ -126,6 +126,12 @@ export function startGame() {
 
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
     currentNumPlayers = Number(rButts.find(r => r.checked).value);
+
+    const gameSpeed = Number((document.querySelector('input[name="game-speed"]:checked') as HTMLInputElement).value);
+    npcTimeout = gameSpeed * 500;
+    doubtTimeout = gameSpeed * 1000;
+    newRoundTimeout = gameSpeed * 1500;
+    console.log(npcTimeout, doubtTimeout, newRoundTimeout);
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
         players.push({id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: util.roll5dice()});

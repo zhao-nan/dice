@@ -66,8 +66,12 @@ header {
     font-size: 20px;
     padding: 10px;
     border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.2);
     border: solid 2px black;
+}
+
+.rules-button:hover {
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .info-section {
@@ -228,6 +232,7 @@ button {
     font-weight: bold;
     padding: 10px;
     margin: 10px;
+    cursor: pointer;
 }
 
 .claim-section {
@@ -279,7 +284,7 @@ button:disabled {
 }
 
 /* IMAGE STYLES */
-[type=radio] + img {
+[type=radio] {
     cursor: pointer;
 }
 

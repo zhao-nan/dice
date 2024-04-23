@@ -168,8 +168,21 @@ export function activatePlayerTurnSection(currentClaim: Claim) {
 export function createGameChoices(startGame: () => void) {
     setInfoMsg('Choose game options! :)');
     const optionsPanel = createElement('div', { id: 'options-panel' }, document.body);
+    createNumPlayerChoice(optionsPanel);
 
-    const numPlayersForm = createElement('div', 
+    createGameSpeedChoice(optionsPanel);    
+
+    const startButton = createElement('button', {
+        id: 'setup-game',
+        textContent: 'Start Game',
+        eventListeners: { click: startGame },
+    }, optionsPanel);
+
+    startButton.addEventListener('click', startGame);
+}
+
+function createNumPlayerChoice(optionsPanel: HTMLDivElement) {
+    const numPlayersForm = createElement('div',
         { id: 'num-players-form', textContent: 'Number of players:'  }, 
         optionsPanel);
 
@@ -187,14 +200,28 @@ export function createGameChoices(startGame: () => void) {
         numPlayersForm.appendChild(radio);
         numPlayersForm.appendChild(label);
     }
+}
 
-    const startButton = createElement('button', {
-        id: 'setup-game',
-        textContent: 'Start Game',
-        eventListeners: { click: startGame },
-    }, optionsPanel);
+function createGameSpeedChoice(optionsPanel: HTMLDivElement) {
+    const gameSpeedForm = createElement('div',
+        { id: 'game-speed-form', textContent: 'Game speed:'  }, 
+        optionsPanel);
 
-    startButton.addEventListener('click', startGame);
+    const speeds = ['Fast', 'Medium', 'Slow'];
+    for (let i = 0; i < speeds.length; i++) {
+        const radio = createElement('input', {
+            type: 'radio',
+            value: i+1,
+            name: 'game-speed',
+            id: 'game-speed' + speeds[i],
+            checked: i === 1,
+        }, gameSpeedForm);
+
+        const label = createElement('label', { textContent: speeds[i] }, gameSpeedForm);
+
+        gameSpeedForm.appendChild(radio);
+        gameSpeedForm.appendChild(label);
+    }
 }
 
 export function activateMainSection() {
