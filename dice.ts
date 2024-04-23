@@ -3,7 +3,7 @@ import { Claim, Player } from './types.js';
 import * as doc from './docInteraction.js';
 import * as util from './util.js';
 
-window.onload = createGameChoices;
+window.onload = letsGo;
 
 let currentPlayer: Player;
 let players: Player[] = new Array();
@@ -12,11 +12,13 @@ let npcTimeout: number = 500;
 let doubtTimeout: number = 500;
 let newRoundTimeout: number = 500;
 
-function createGameChoices() {
+function letsGo() {
+    doc.createRulesSection();
     doc.createGameChoices(startGame);
 }
 
 function npcTurn() {
+    doc.setInfoMsg(`Player ${currentPlayer.id}'s turn!`); 
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, currentNumPlayers);
@@ -29,7 +31,7 @@ function npcTurn() {
 }
 
 function nextTurn() {
-    doc.setPlayerStatus(prevPlayer().id, 'waiting');
+    doc.setPlayerStatus(prevPlayer().id, 'Waiting');
     currentPlayer = nextPlayer();
 
     if (currentPlayer.id == 0) {
@@ -41,7 +43,7 @@ function nextTurn() {
 
 function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
-    doc.setPlayerStatus(currentPlayer.id, 'doubt');
+    doc.setPlayerStatus(currentPlayer.id, 'Doubt');
     for (const p of players) {
         doc.updatePlayerSection(p, false, true);
     }
@@ -52,6 +54,7 @@ function doubt() {
             let pp = prevPlayer();
             doc.setInfoMsg(justifiedCallMsg(pp, tot));
             pp.lives -= 1;
+            doc.drawLives(pp);
             if (pp.lives <= 0) {
                 doc.setInfoMsg(elimMsg(pp));
                 doc.setPlayerStatus(pp.id, 'dead');
@@ -64,6 +67,7 @@ function doubt() {
             // Claim unsuccessful
             doc.setInfoMsg(noDoubtMsg(tot));
             currentPlayer.lives -= 1;
+            doc.drawLives(currentPlayer);
             if (currentPlayer.lives <= 0) {
                 doc.setInfoMsg(elimMsg(currentPlayer));
                 doc.setPlayerStatus(currentPlayer.id, 'dead');
@@ -79,13 +83,14 @@ function doubt() {
 
 function claim(claim: Claim) {
     currentPlayer.claim = claim;
-    doc.setPlayerStatus(currentPlayer.id, 'claim');
+    doc.setPlayerStatus(currentPlayer.id, 'Claim');
     doc.updatePlayerSection(prevPlayer(), false, false);
     doc.updatePlayerSection(currentPlayer, true, false);
     nextTurn();
 }
 
 function playerTurn() {
+    doc.setInfoMsg(`Your turn!`);
     doc.activatePlayerTurnSection(currentClaim());
     updatePlayerTurnSection();
 }
@@ -93,8 +98,10 @@ function playerTurn() {
 function startNewRound(player: Player) {
     doc.setInfoMsg(`Starting new round with ${currentNumPlayers} players! Starting: Player ${player.id}`);
     if (players.filter(p => p.lives > 0).length == 1) {
-        doc.setInfoMsg('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
-        doc.activateNewGameButton(restartGame);
+        const winner = players.find(p => p.lives > 0);
+        doc.setInfoMsg('Player ' + winner.id + ' wins!');
+        doc.setPlayerStatus(winner.id, 'Winner!');
+        doc.activateNewGameButton();
     } else {
         players.forEach((p) => {
             if (p.lives > 0) {
@@ -114,10 +121,7 @@ function startNewRound(player: Player) {
     }
 }
 
-
-
-function startGame() {
-    event.preventDefault();
+export function startGame() {
     doc.setInfoMsg('Starting game...');
 
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
@@ -133,22 +137,11 @@ function startGame() {
     createPlayerSections(currentNumPlayers, diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
 
-
     players.forEach((p) => {doc.updatePlayerSection(p, false, false)});
 
     nextTurn();
 };
 
-function restartGame() {
-    console.log('Restarting game...');
-    const playerContainer = document.getElementById('player-container');
-    playerContainer.innerHTML = '';    
-    const playerTurnSection = document.getElementById('player-turn-section');
-    playerTurnSection.innerHTML = '';
-    const npcSection = document.getElementById('npc-container');
-    npcSection.innerHTML = '';
-    doc.createGameChoices(startGame);
-}
 
 function updatePlayerTurnSection() {
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
@@ -169,7 +162,6 @@ function createPlayerSections(numPlayers: number, p1dice: number[]) {
         doc.setPlayerStatus(i, 'waiting');
     }
 }
-
 
 function resetClaims() {
     players.forEach(p => p.claim = {count: 0, diceVal: 0});

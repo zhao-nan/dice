@@ -1,5 +1,6 @@
 import * as util from './util.js';
 import { Claim, Player } from './types.js';
+import { startGame } from './dice.js';
 
 let listenersAlreadyAdded: boolean = false;
 
@@ -8,6 +9,29 @@ export function createElement(type, props, parent) {
     Object.assign(element, props);
     parent.appendChild(element);
     return element;
+}
+
+export function createRulesSection() {
+    const dialog: HTMLDialogElement = document.querySelector('.rules');
+    const rulesButton = document.getElementById('rules-button');
+
+    rulesButton.addEventListener('click', () => {
+        dialog.showModal();
+    });
+
+    // Close the dialog when the Escape key is pressed
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            dialog.close();
+        }
+    });
+
+    // Close the dialog when a click occurs outside the dialog
+    window.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
 }
 
 export function setInfoMsg(text: string) {
@@ -83,7 +107,7 @@ export function createPlayerSection(i: number) {
     return playerSection;
 }
 
-function drawLives(player: Player) {
+export function drawLives(player: Player) {
     const livesContainer = document.getElementById('lives-container' + player.id) as HTMLDivElement;
     livesContainer.innerHTML = '';
     livesContainer.textContent = '❤️ '.repeat(player.lives);
@@ -179,7 +203,7 @@ export function activateMainSection() {
     document.getElementById('info-section').style.display = 'block';
 }
 
-export function activateNewGameButton(restartGame: () => void) {
+export function activateNewGameButton() {
     const infoSection = document.getElementById('info-section');
     const newGameButton = createElement('button', {
         id: 'new-game-button',
@@ -188,9 +212,17 @@ export function activateNewGameButton(restartGame: () => void) {
     newGameButton.addEventListener('click', restartGame);
 }
 
+function restartGame() {
+    console.log('Restarting game...');
+    document.getElementById('player-container').innerHTML = '';
+    document.getElementById('player-turn-section').innerHTML = '';
+    document.getElementById('npc-container').innerHTML = '';
+    createGameChoices(startGame);
+}
+
 export function setPlayerStatus(playerNum: number, status: string) {
     const activity = document.getElementById('player-activity' + playerNum);
-    activity.setAttribute('status', status);
+    activity.setAttribute('status', status.toLowerCase().replace('!',''));
     const statusLabel = document.getElementById('player-status' + playerNum);
     statusLabel.textContent = status;
 }
@@ -314,7 +346,13 @@ export function updateClaimButton(currentClaim: Claim) {
 export function addEvListeners() {
     if (listenersAlreadyAdded) return;
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'Add' || event.key === 'ArrowUp') {
+        if (event.key === 'd') {
+            const doubtButton = document.getElementById('doubt-section').querySelector('button');
+            if (!doubtButton.disabled) {
+                doubtButton.click();
+            }
+        }
+        if (event.key === 'ArrowUp') {
             const slider = document.getElementById('claim-slider') as HTMLInputElement;
             const sliderValue = parseInt(slider.value);
             if (sliderValue < parseInt(slider.max)) {
@@ -322,7 +360,7 @@ export function addEvListeners() {
                 // Trigger the input event manually to update the button state and label
                 slider.dispatchEvent(new Event('input'));
             }
-        } else if (event.key === 'Minus' || event.key === 'ArrowDown') {
+        } else if (event.key === 'ArrowDown') {
             const slider = document.getElementById('claim-slider') as HTMLInputElement;
             const sliderValue = parseInt(slider.value);
             if (sliderValue > parseInt(slider.min)) {
@@ -349,7 +387,6 @@ export function addEvListeners() {
     });
     listenersAlreadyAdded = true;
 }
-
 
 export function getClaimDiceVal() {
     const rButt: HTMLInputElement = document.querySelector('input[name="dice-val-claim"]:checked');

@@ -11,15 +11,29 @@ body {
 }
 
 header {
+    display: flex;
     font-size: 40px;
     font-weight: bold;
     color: white;
-    background-color: rebeccapurple;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    width: 100%;
+    text-align: center;
+    background-image: linear-gradient(
+        to right,
+        orange,
+        lightcoral,
+        rgb(122, 107, 255),
+        rebeccapurple,
+        lightblue,
+        lightgreen
+    );
     position: fixed;
     top: 0;
     padding: 10px;
-    margin-top: 50px;
     border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
 }
 
 .zh {
@@ -36,8 +50,24 @@ header {
     color: red;
 }
 
-* {
-    box-sizing: border-box;
+.rules {
+    font-size: large;
+    font-weight: normal;
+    color: white;
+    width: 333px;
+    height: 333px;
+    background-color: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+}
+
+.rules-button {
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: solid 2px black;
 }
 
 .info-section {
@@ -50,9 +80,11 @@ header {
     background-color: rgb(90, 189, 235);
     border: solid 2px black;
     padding: 20px;
-    min-width: 200px;
+    min-width: 350px;
+    min-height: 75px;
     font-size: 20px;
     text-align: center;
+    border-radius: 20px;
 }
 
 .dice-container img {
@@ -135,6 +167,17 @@ header {
 }
 .player-activity[status="dead"] {
     background-color: black;
+}
+.player-activity[status="winner"] {
+    background-image: linear-gradient(
+        to right,
+        orange,
+        lightcoral,
+        rgb(122, 107, 255),
+        rebeccapurple,
+        lightblue,
+        lightgreen
+    );
 }
 .player-activity[status="dead"] img {
     display: none;

@@ -8,10 +8,27 @@
 </head>
 <body>
     <header>
-        <span class="oneDie">⚀</span>⚁⚂⚃⚄⚅ 
-        <span class="zh"> Zhao Nan's </span>
-        <span class="ld">  Liar's Dice</span>
-        ⚅⚄⚃⚂⚁<span class="oneDie">⚀</span>
+        <span class="oneDie">⚀</span>⚁⚂⚃⚄⚅&nbsp; 
+        <span class="zh">&nbsp;Zhao Nan's&nbsp;</span>
+        <span class="ld">Liar's Dice</span>
+        &nbsp;⚅⚄⚃⚂⚁<span class="oneDie">⚀</span>
+        <dialog class="rules">
+            Every player rolls 5 dice. Players take turns 
+            bidding on the number of dice with a certain face value.
+            The next player must either raise the bid or doubt the
+            previous bid. 
+            <br>
+            If the bid is doubted, all dice are revealed
+            and the loser loses a life. The game continues until only
+            one player has lives remaining.
+            <br>
+            Dice showing a 1 ⚀ are wild and can be used as any face value,
+            but you cannot bid on ones.
+            <br>
+            Use the arrow keys to change your bid and press "Enter" to submit.
+            Press "d" to doubt.
+        </dialog>
+        <button id="rules-button" class="rules-button">Rules</button>
     </header>
     <section id="npc-container" class="npcContainer">
         <!-- Container for the (non-NPC) player -->
