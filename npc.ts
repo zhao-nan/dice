@@ -5,7 +5,6 @@ export function npcDecision(currentClaim: Claim, ownDice: number[], playerCount:
     const prob = util.probOfClaim(currentClaim, ownDice, (playerCount - 1) * 5);
         const rand = Math.random();
         if (rand > prob) {
-            console.log(`Doubting because prob is ${prob} and rand is ${rand}`);
             return {count: 0, diceVal: 0};
         } else {
             return npcClaim(currentClaim, ownDice, playerCount);

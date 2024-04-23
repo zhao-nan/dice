@@ -172,6 +172,9 @@ header {
 .player-activity[status="dead"] {
     background-color: black;
 }
+.player-activity[status="oops"] {
+    background-color: rgb(117, 33, 33);
+}
 .player-activity[status="winner"] {
     background-image: linear-gradient(
         to right,

@@ -33,6 +33,7 @@ function npcTurn() {
 function nextTurn() {
     doc.setPlayerStatus(prevPlayer().id, 'Waiting');
     currentPlayer = nextPlayer();
+    doc.setPlayerStatus(currentPlayer.id, 'Thinking');
 
     if (currentPlayer.id == 0) {
         playerTurn();
@@ -50,35 +51,36 @@ function doubt() {
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
-            // Claim successful
+            // Doubt justified
             let pp = prevPlayer();
             doc.setInfoMsg(justifiedCallMsg(pp, tot));
-            pp.lives -= 1;
-            doc.drawLives(pp);
-            if (pp.lives <= 0) {
-                doc.setInfoMsg(elimMsg(pp));
-                doc.setPlayerStatus(pp.id, 'dead');
-            }
+            subtractLife(pp);
             currentPlayer = prevPlayer();
             setTimeout(() => {
+                doc.setPlayerStatus(nextPlayer().id, 'Waiting');
                 startNewRound(prevPlayer())
             }, doubtTimeout);
         } else {
-            // Claim unsuccessful
+            // Doubt unjustified
             doc.setInfoMsg(noDoubtMsg(tot));
-            currentPlayer.lives -= 1;
-            doc.drawLives(currentPlayer);
-            if (currentPlayer.lives <= 0) {
-                doc.setInfoMsg(elimMsg(currentPlayer));
-                doc.setPlayerStatus(currentPlayer.id, 'dead');
-                currentPlayer = nextPlayer();
-            }
+            subtractLife(currentPlayer);
             setTimeout(() => {
+                doc.setPlayerStatus(prevPlayer().id, 'Waiting');
                 startNewRound(currentPlayer)
             }, doubtTimeout);
         }
         currentNumPlayers = players.filter(p => p.lives > 0).length;
     }, newRoundTimeout);
+}
+
+function subtractLife(p: Player) {
+    doc.setPlayerStatus(p.id, 'Oops!');
+    p.lives -= 1;
+    doc.drawLives(p);
+    setTimeout(() => {
+        doc.setInfoMsg(elimMsg(p));
+        doc.setPlayerStatus(p.id, 'dead');
+    }, doubtTimeout);
 }
 
 function claim(claim: Claim) {
@@ -131,7 +133,6 @@ export function startGame() {
     npcTimeout = gameSpeed * 500;
     doubtTimeout = gameSpeed * 1000;
     newRoundTimeout = gameSpeed * 1500;
-    console.log(npcTimeout, doubtTimeout, newRoundTimeout);
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
         players.push({id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: util.roll5dice()});

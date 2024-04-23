@@ -65,11 +65,10 @@ export function createPlayerSection(i: number) {
     const playerActivity = createElement('span', {
         className: 'player-activity',
         id: `player-activity${i}`,
-        status: 'waiting'
     }, playerSection);
 
     createElement('label', {
-        textContent: 'waiting',
+        textContent: 'Waiting',
         className: 'player-status',
         id: `player-status${i}`
     }, playerActivity);
