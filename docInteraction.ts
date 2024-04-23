@@ -1,6 +1,8 @@
 import * as util from './util.js';
 import { Claim, Player } from './types.js';
 
+let listenersAlreadyAdded: boolean = false;
+
 export function createElement(type, props, parent) {
     const element = document.createElement(type);
     Object.assign(element, props);
@@ -10,7 +12,7 @@ export function createElement(type, props, parent) {
 
 export function setInfoMsg(text: string) {
     const infoSection = document.getElementById('info-section');
-    infoSection.textContent = text;
+    infoSection.innerHTML = text;
 }
 
 export function createPlayerSection(i: number) {
@@ -38,11 +40,12 @@ export function createPlayerSection(i: number) {
 
     const playerActivity = createElement('span', {
         className: 'player-activity',
-        id: `player-activity${i}`
+        id: `player-activity${i}`,
+        status: 'waiting'
     }, playerSection);
 
     createElement('label', {
-        textContent: 'Waiting',
+        textContent: 'waiting',
         className: 'player-status',
         id: `player-status${i}`
     }, playerActivity);
@@ -114,6 +117,75 @@ export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boo
     }
     
     drawLives(p);
+}
+
+export function deactivatePlayerTurnSection() {
+    const playerTurnSection = document.getElementById('player-turn-section');
+    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
+    playerTurnSection.setAttribute('active', 'false');
+    interactiveElements.forEach(element => {
+        element.setAttribute('disabled', 'true');
+    });
+}
+
+export function activatePlayerTurnSection(currentClaim: Claim) {
+    const playerTurnSection = document.getElementById('player-turn-section');
+    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
+    playerTurnSection.setAttribute('active', 'true');
+    interactiveElements.forEach(element => {
+        element.removeAttribute('disabled');
+    });
+    if (currentClaim.count == 0) {
+        const doubtButton = document.getElementById('doubt-section').querySelector('button');
+        doubtButton.setAttribute('disabled', 'true');
+    }
+}
+
+export function createGameChoices(startGame: () => void) {
+    setInfoMsg('Choose game options! :)');
+    const optionsPanel = createElement('div', { id: 'options-panel' }, document.body);
+
+    const numPlayersForm = createElement('div', 
+        { id: 'num-players-form', textContent: 'Number of players:'  }, 
+        optionsPanel);
+
+    for (let i = 2; i <= 8; i++) {
+        const radio = createElement('input', {
+            type: 'radio',
+            value: i.toString(),
+            name: 'num-players',
+            id: 'num-players' + i,
+            checked: i === 5,
+        }, numPlayersForm);
+
+        const label = createElement('label', { textContent: `${i}` }, numPlayersForm);
+
+        numPlayersForm.appendChild(radio);
+        numPlayersForm.appendChild(label);
+    }
+
+    const startButton = createElement('button', {
+        id: 'setup-game',
+        textContent: 'Start Game',
+        eventListeners: { click: startGame },
+    }, optionsPanel);
+
+    startButton.addEventListener('click', startGame);
+}
+
+export function activateMainSection() {
+    document.getElementById('options-panel').remove();
+    document.getElementById('player-container').style.display = 'grid';
+    document.getElementById('info-section').style.display = 'block';
+}
+
+export function activateNewGameButton(restartGame: () => void) {
+    const infoSection = document.getElementById('info-section');
+    const newGameButton = createElement('button', {
+        id: 'new-game-button',
+        textContent: 'New Game'
+    }, infoSection);
+    newGameButton.addEventListener('click', restartGame);
 }
 
 export function setPlayerStatus(playerNum: number, status: string) {
@@ -224,6 +296,8 @@ export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => voi
         disabled: true
     }, claimSection);
 
+    addEvListeners();
+
     playerTurnSection.appendChild(claimSection);
     playerTurnSection.style.display = 'grid';
 }
@@ -238,6 +312,7 @@ export function updateClaimButton(currentClaim: Claim) {
 }
 
 export function addEvListeners() {
+    if (listenersAlreadyAdded) return;
     window.addEventListener('keydown', (event) => {
         if (event.key === 'Add' || event.key === 'ArrowUp') {
             const slider = document.getElementById('claim-slider') as HTMLInputElement;
@@ -267,9 +342,12 @@ export function addEvListeners() {
                     const nextRadioButton = radioButtons[selectedIndex + 1];
                     nextRadioButton.checked = true;
                 }
+                // Trigger change event manually to update the button state
+                selectedRadioButton.dispatchEvent(new Event('change'));
             }
         }
     });
+    listenersAlreadyAdded = true;
 }
 
 

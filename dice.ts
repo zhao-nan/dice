@@ -8,10 +8,16 @@ window.onload = createGameChoices;
 let currentPlayer: Player;
 let players: Player[] = new Array();
 let currentNumPlayers: number;
+let npcTimeout: number = 500;
+let doubtTimeout: number = 500;
+let newRoundTimeout: number = 500;
 
+function createGameChoices() {
+    doc.createGameChoices(startGame);
+}
 
 function npcTurn() {
-    deactivatePlayerTurnSection();
+    doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, currentNumPlayers);
         if (c.count == 0) {
@@ -19,7 +25,7 @@ function npcTurn() {
         } else {
             claim(c);
         }
-    }, 1000);
+    }, npcTimeout);
 }
 
 function nextTurn() {
@@ -53,7 +59,7 @@ function doubt() {
             currentPlayer = prevPlayer();
             setTimeout(() => {
                 startNewRound(prevPlayer())
-            }, 3000);
+            }, doubtTimeout);
         } else {
             // Claim unsuccessful
             doc.setInfoMsg(noDoubtMsg(tot));
@@ -65,10 +71,10 @@ function doubt() {
             }
             setTimeout(() => {
                 startNewRound(currentPlayer)
-            }, 3000);
+            }, doubtTimeout);
         }
         currentNumPlayers = players.filter(p => p.lives > 0).length;
-    }, 2000);
+    }, newRoundTimeout);
 }
 
 function claim(claim: Claim) {
@@ -80,15 +86,15 @@ function claim(claim: Claim) {
 }
 
 function playerTurn() {
-    activatePlayerTurnSection();
+    doc.activatePlayerTurnSection(currentClaim());
     updatePlayerTurnSection();
 }
 
 function startNewRound(player: Player) {
-    console.log(`Starting new round with ${currentNumPlayers} players! Starting: player ${player.id}`);
+    doc.setInfoMsg(`Starting new round with ${currentNumPlayers} players! Starting: Player ${player.id}`);
     if (players.filter(p => p.lives > 0).length == 1) {
         doc.setInfoMsg('Player ' + players.findIndex(p => p.lives > 0) + ' wins!');
-        endGame();
+        doc.activateNewGameButton(restartGame);
     } else {
         players.forEach((p) => {
             if (p.lives > 0) {
@@ -114,39 +120,34 @@ function startGame() {
     event.preventDefault();
     doc.setInfoMsg('Starting game...');
 
-    const numPlayersForm = document.getElementById('num-players-form') as HTMLFormElement;
-
     const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
-
     currentNumPlayers = Number(rButts.find(r => r.checked).value);
-
+    players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
         players.push({id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: util.roll5dice()});
     }
-    document.body.removeChild(numPlayersForm);
 
-    document.getElementById('player-container').style.display = 'grid';
-    document.getElementById('info-section').style.display = 'block';
-    
+    doc.activateMainSection();
+
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
     createPlayerSections(currentNumPlayers, diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
 
-    doc.addEvListeners();
 
     players.forEach((p) => {doc.updatePlayerSection(p, false, false)});
 
     nextTurn();
 };
 
-function endGame() {
+function restartGame() {
+    console.log('Restarting game...');
     const playerContainer = document.getElementById('player-container');
-    playerContainer.innerHTML = '';
-    const npcSection = document.getElementById('npc-section');
+    playerContainer.innerHTML = '';    
+    const playerTurnSection = document.getElementById('player-turn-section');
+    playerTurnSection.innerHTML = '';
+    const npcSection = document.getElementById('npc-container');
     npcSection.innerHTML = '';
-    playerContainer.style.display = 'none';
-    document.getElementById('player-turn-section').style.display = 'none';
-    createGameChoices();
+    doc.createGameChoices(startGame);
 }
 
 function updatePlayerTurnSection() {
@@ -165,61 +166,8 @@ function updatePlayerTurnSection() {
 function createPlayerSections(numPlayers: number, p1dice: number[]) {
     for (let i = 0; i < numPlayers; i++) {
         doc.createPlayerSection(i);
+        doc.setPlayerStatus(i, 'waiting');
     }
-}
-
-function deactivatePlayerTurnSection() {
-    const playerTurnSection = document.getElementById('player-turn-section');
-    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
-    playerTurnSection.setAttribute('active', 'false');
-    interactiveElements.forEach(element => {
-        element.setAttribute('disabled', 'true');
-    });
-}
-
-function activatePlayerTurnSection() {
-    const playerTurnSection = document.getElementById('player-turn-section');
-    const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
-    playerTurnSection.setAttribute('active', 'true');
-    interactiveElements.forEach(element => {
-        element.removeAttribute('disabled');
-    });
-    if (currentClaim().count == 0) {
-        const doubtButton = document.getElementById('doubt-section').querySelector('button');
-        doubtButton.setAttribute('disabled', 'true');
-    }
-}
-
-function createGameChoices() {
-    const playerContainer = document.getElementById('player-container');
-    playerContainer.style.display = 'none';
-    document.getElementById('player-turn-section').style.display = 'none';
-    document.getElementById('info-section').style.display = 'none';
-
-    const numPlayersForm = doc.createElement('div', { id: 'num-players-form' }, document.body);
-
-    for (let i = 2; i <= 8; i++) {
-        const radio = doc.createElement('input', {
-            type: 'radio',
-            value: i.toString(),
-            name: 'num-players',
-            id: 'num-players' + i,
-            checked: i === 5,
-        }, numPlayersForm);
-
-        const label = doc.createElement('label', { textContent: `${i}` }, numPlayersForm);
-
-        numPlayersForm.appendChild(radio);
-        numPlayersForm.appendChild(label);
-    }
-
-    const startButton = doc.createElement('button', {
-        id: 'setup-game',
-        textContent: 'Start Game',
-        eventListeners: { click: startGame },
-    }, numPlayersForm);
-
-    startButton.addEventListener('click', startGame);
 }
 
 
@@ -254,18 +202,19 @@ function diceVals() {
 }
 
 function initialDoubtMsg() {
-    return `Player ${currentPlayer.id} doubts Player ${prevPlayer().id}'s claim of [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]!`
+    return `Player ${currentPlayer.id} doubts Player ${prevPlayer().id}'s claim of <br>
+    ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} !`
 }
 
 function justifiedCallMsg(pp: Player, tot: number) {
-    return `Justified call! 
-        Claim was [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]
+    return `Justified call! Claim was <br>
+     ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
         but total was only ${tot}. Player ${pp.id} loses a life!`;
 }
 
 function noDoubtMsg(tot: number) {
-    return `Player ${prevPlayer().id} was correct: 
-    Claim was [${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)}]
+    return `Player ${prevPlayer().id} was correct: Claim was <br>
+    ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
     and total was ${tot}. Player ${currentPlayer.id} loses a life!`
 }
 
