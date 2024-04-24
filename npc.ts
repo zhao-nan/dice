@@ -1,37 +1,42 @@
 import { Claim } from './types.js';
 import * as util from './util.js';
 
-export function npcDecision(currentClaim: Claim, ownDice: number[], numOtherDice: number) : Claim {
-    return npcClaim(currentClaim, ownDice, numOtherDice);
-}
+export function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: number) : Claim {
 
-function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: number) : Claim {
+    const rand = Math.random();
+    // doubt if current claim is just too unlikely
+    let prob = util.probOfClaim(currentClaim, ownDice, numOtherDice);
+    if (prob < 0.5 && (rand - prob) > 0.5 || prob < 0.15) {
+        console.log("nah");
+        return {count: 0, diceVal: 0};
+    }
 
     let freqs = getFreqs(ownDice);
     let fav = freqs.indexOf(Math.max(...freqs));
     let val = freqs[fav];
 
     let stillEarly = currentClaim.count <= numOtherDice / 5;
-    const rand = Math.random();
 
     // bluffing bid
     let bluffFav = Math.floor(Math.random() * 6) + 1;
     while (bluffFav === val || bluffFav === 1) {
         bluffFav = Math.floor(Math.random() * 6) + 1;
     }
-    let bluffVal = Math.floor(freqs[fav] + numOtherDice / 3 - Math.floor(Math.random() * 3));
+    let bluffVal = Math.floor(freqs[fav] + numOtherDice / 3 - Math.ceil(Math.random() * 4));
     let bluffClaim = {count: bluffVal, diceVal: bluffFav};
     let safe = safeClaim(currentClaim, numOtherDice, fav, val);
 
     if (stillEarly && rand > 0.5 && util.isGreater(bluffClaim, currentClaim)) {
-        console.log("bluffing: " + bluffClaim.count + " " + bluffClaim.diceVal);
+        // can't read my poker face
         return bluffClaim;
     } else if (safe.count > 0) {
+        // playing it safe
         return safe;
     } else {
-        console.log("no safe claim, dounting or hoping");
+        // no safe bet, so just go with the most likely
         const doubtRand = Math.random();
-        if (doubtRand > 0.5) {
+        if (doubtRand > prob) {
+            console.log("doubting because of prob: " + prob + " and rand: " + doubtRand);
             return {count: 0, diceVal: 0};
         } else {
             let _count = fav > currentClaim.diceVal ? currentClaim.count : currentClaim.count + 1;
@@ -42,23 +47,17 @@ function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: number) 
 
 }
 
-function safeClaim(currentClaim: Claim, numOtherDice: number, fav: number, val: number) {
-    console.log("safeClaim: " + fav + " " + val + " " + numOtherDice);
-    let expected = Math.floor(numOtherDice / 3) + val;
-    let safeClaim = {count: val + expected, diceVal: fav};
+function safeClaim(currentClaim: Claim, numOtherDice: number, diceVal: number, ownNumOf: number) {
+    let expected = Math.floor(numOtherDice / 3) + ownNumOf;
+    let safeClaim = {count: expected, diceVal: diceVal};
     if (util.isGreater(safeClaim, currentClaim)) {
         // pick number between current claim count and safeClaim count
-        console.log("safeClaim: " + safeClaim.count + " " + safeClaim.diceVal);
-        console.log("picking random number between " + currentClaim.count + " and " + safeClaim.count);
-        let claimCount = Math.ceil(Math.random() * (safeClaim.count - currentClaim.count)) + currentClaim.count - 1;
-        console.log("picked " + claimCount);
-        return {count: claimCount, diceVal: fav};
+        let claimCount = Math.ceil(Math.random() * (safeClaim.count - currentClaim.count)) + currentClaim.count;
+        return {count: claimCount, diceVal: diceVal};
     } else {
-        console.log("deemed not safe")
         return {count: 0, diceVal: 0};
     }
 }
-
 
 function getFreqs(ownDice: number[]) {
     let freqs = Array.from({ length: 7 }, (_, i) => ownDice.filter(num => num === i).length);

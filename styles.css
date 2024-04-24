@@ -306,3 +306,7 @@ button:disabled {
     justify-content: center;
     gap: 20px;
 }
+
+.highlighted-dice {
+    border: 2px solid red;
+}

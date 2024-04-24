@@ -21,7 +21,7 @@ function npcTurn() {
     doc.setInfoMsg(`Player ${currentPlayer.id}'s turn!`); 
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
-        let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
+        let c: Claim = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
         if (c.count == 0) {
             doubt();
         } else {
@@ -45,6 +45,7 @@ function nextTurn() {
 function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
     doc.setPlayerStatus(currentPlayer.id, 'Doubt');
+    doc.highlightRelevantDice(currentClaim().diceVal);
     for (const p of players) {
         doc.updatePlayerSection(p, false, true);
     }
@@ -222,6 +223,6 @@ function elimMsg(pp: Player) {
 }
 
 function getNumOtherDice(p: Player) {
-    return players.filter(pl => pl.id != p.id).map(pl => pl.dice).flat().length;
+    return players.filter(pl => pl.id != p.id && pl.lives > 0).map(pl => pl.dice).flat().length;
 } 
 

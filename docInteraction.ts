@@ -418,3 +418,12 @@ export function getClaimDiceVal() {
     const rButt: HTMLInputElement = document.querySelector('input[name="dice-val-claim"]:checked');
     return parseInt(rButt.value);
 }
+
+export function highlightRelevantDice(diceVal: number) {
+    const diceImgs : NodeListOf<HTMLImageElement> = document.querySelectorAll('.player-die-img');
+    diceImgs.forEach((img) => {
+        if (img.src.includes(diceVal.toString())) {
+            img.classList.add('highlighted-dice');
+        }
+    });
+}
