@@ -21,7 +21,7 @@ function npcTurn() {
     doc.setInfoMsg(`Player ${currentPlayer.id}'s turn!`); 
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
-        let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, currentNumPlayers);
+        let c: Claim = npc.npcDecision(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
         if (c.count == 0) {
             doubt();
         } else {
@@ -220,4 +220,8 @@ function noDoubtMsg(tot: number) {
 function elimMsg(pp: Player) {
     return `Player ${pp.id} has been eliminated!`;
 }
+
+function getNumOtherDice(p: Player) {
+    return players.filter(pl => pl.id != p.id).map(pl => pl.dice).flat().length;
+} 
 
