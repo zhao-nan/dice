@@ -112,7 +112,7 @@ export function drawLives(player: Player) {
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
 
-export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boolean) {
+export function updatePlayerSection(p: Player, currentClaim: Claim, showClaim: boolean, showDice: boolean) {
     const playerClaimVal = document.getElementById('player-claim-val' + p.id) as HTMLSpanElement;
     if (playerClaimVal == null) {
         console.log('Player claim val is null: ' + 'player-claim-val' + p.id);
@@ -134,8 +134,14 @@ export function updatePlayerSection(p: Player, showClaim: boolean, showDice: boo
             resultImg.style.display = 'none';
         } else if (showDice || p.id == 0) {
             resultImg.src = util.getDiceImgSrc(p.dice[i-1]);
+            if (p.dice[i-1] == 1 || p.dice[i-1] == currentClaim.diceVal) {
+                resultImg.classList.add('highlighted-dice');
+            }
         } else {
             resultImg.src = 'img/qm.png';
+        }
+        if (!showDice) {
+            resultImg.classList.remove('highlighted-dice');
         }
     }
     
@@ -417,13 +423,4 @@ export function addEvListeners() {
 export function getClaimDiceVal() {
     const rButt: HTMLInputElement = document.querySelector('input[name="dice-val-claim"]:checked');
     return parseInt(rButt.value);
-}
-
-export function highlightRelevantDice(diceVal: number) {
-    const diceImgs : NodeListOf<HTMLImageElement> = document.querySelectorAll('.player-die-img');
-    diceImgs.forEach((img) => {
-        if (img.src.includes(diceVal.toString())) {
-            img.classList.add('highlighted-dice');
-        }
-    });
 }

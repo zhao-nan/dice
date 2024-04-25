@@ -45,9 +45,8 @@ function nextTurn() {
 function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
     doc.setPlayerStatus(currentPlayer.id, 'Doubt');
-    doc.highlightRelevantDice(currentClaim().diceVal);
     for (const p of players) {
-        doc.updatePlayerSection(p, false, true);
+        doc.updatePlayerSection(p, currentClaim(), false, true);
     }
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
@@ -87,8 +86,8 @@ function subtractLife(p: Player) {
 function claim(claim: Claim) {
     currentPlayer.claim = claim;
     doc.setPlayerStatus(currentPlayer.id, 'Claim');
-    doc.updatePlayerSection(prevPlayer(), false, false);
-    doc.updatePlayerSection(currentPlayer, true, false);
+    doc.updatePlayerSection(prevPlayer(), currentClaim(), false, false);
+    doc.updatePlayerSection(currentPlayer, currentClaim(), true, false);
     nextTurn();
 }
 
@@ -112,11 +111,7 @@ function startNewRound(player: Player) {
             } else {
                 p.dice = [0, 0, 0, 0, 0];
             }
-            if (p.id == 0) {
-                doc.updatePlayerSection(p, false, true);
-            } else {
-                doc.updatePlayerSection(p, false, false);
-            }
+            doc.updatePlayerSection(p, currentClaim(), false, false);
         });
         resetClaims();
         currentPlayer = prevPlayer();
@@ -145,7 +140,7 @@ export function startGame() {
     createPlayerSections(currentNumPlayers, diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
 
-    players.forEach((p) => {doc.updatePlayerSection(p, false, false)});
+    players.forEach((p) => {doc.updatePlayerSection(p, currentClaim(), false, false)});
 
     nextTurn();
 };

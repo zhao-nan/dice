@@ -36,6 +36,10 @@ header {
     flex-direction: row;
 }
 
+.highlighted-dice {
+    border: 2px solid red;
+}
+
 .zh {
     color: lightblue;
 }
@@ -61,7 +65,7 @@ header {
 }
 
 .rules-button {
-    top: 10px;
+    position: fixed;
     right: 10px;
     font-size: 20px;
     padding: 10px;
@@ -160,9 +164,11 @@ header {
 }
 
 .player-activity[status="waiting"] {
+    background-color: lightgray;
+}
+.player-activity[status="thinking"] {
     background-color: lightgreen;
 }
-
 .player-activity[status="claim"] {
     background-color: lightblue;
 }
@@ -191,7 +197,9 @@ header {
 }
 
 .dice-container, .lives-container {
-    min-height: 25px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .player-turn-section {
@@ -305,8 +313,4 @@ button:disabled {
     flex-direction: column;
     justify-content: center;
     gap: 20px;
-}
-
-.highlighted-dice {
-    border: 2px solid red;
 }
