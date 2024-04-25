@@ -1,6 +1,12 @@
 import * as util from './util.js';
 import { startGame } from './dice.js';
 let listenersAlreadyAdded = false;
+export function addDarkListener() {
+    const darkToggle = document.getElementById('darkModeToggle');
+    darkToggle.addEventListener('change', function () {
+        document.body.classList.toggle('dark-mode', this.checked);
+    });
+}
 export function createElement(type, props, parent) {
     const element = document.createElement(type);
     Object.assign(element, props);

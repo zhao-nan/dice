@@ -9,6 +9,7 @@ let npcTimeout = 500;
 let doubtTimeout = 500;
 let newRoundTimeout = 500;
 function letsGo() {
+    doc.addDarkListener();
     doc.createRulesSection();
     doc.createGameChoices(startGame);
 }

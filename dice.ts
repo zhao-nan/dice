@@ -13,6 +13,7 @@ let doubtTimeout: number = 500;
 let newRoundTimeout: number = 500;
 
 function letsGo() {
+    doc.addDarkListener();
     doc.createRulesSection();
     doc.createGameChoices(startGame);
 }
