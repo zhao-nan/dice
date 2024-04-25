@@ -42,6 +42,7 @@ function doubt() {
     for (const p of players) {
         doc.updatePlayerSection(p, currentClaim(), false, true);
     }
+    doc.updatePlayerSection(prevPlayer(), currentClaim(), true, true);
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
