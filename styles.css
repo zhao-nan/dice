@@ -202,12 +202,13 @@ body.dark-mode {
     justify-content: center;
 }
 
-.player-section .img-container img {
-    max-width: 100%;
-}
-
 #player-container .player-section {
     background-color: lightcoral;
+}
+
+#player-container .player-section .dice-container img {
+    height: 40px;
+    width: 40px;
 }
 
 .player-activity {
@@ -223,6 +224,7 @@ body.dark-mode {
     min-height: 70px;
     border: solid 2px rebeccapurple;
     border-radius: 10px;
+    transition: ease-in-out 0.25s;
 }
 
 .player-status {

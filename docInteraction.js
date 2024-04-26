@@ -344,13 +344,13 @@ export function addEvListeners() {
     if (listenersAlreadyAdded)
         return;
     window.addEventListener('keydown', (event) => {
-        if (event.shiftKey && event.key === 'Enter') {
+        if (event.key === 'Backspace') {
             const doubtButton = document.getElementById('doubt-section').querySelector('button');
             if (!doubtButton.disabled) {
                 doubtButton.click();
             }
         }
-        if (!event.shiftKey && event.key === 'Enter') {
+        if (event.key === 'Enter') {
             const claimButton = document.getElementById('claim-button');
             if (claimButton && !claimButton.disabled) {
                 claimButton.click();

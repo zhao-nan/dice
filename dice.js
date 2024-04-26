@@ -9,6 +9,7 @@ let currentNumPlayers;
 let npcTimeout = 500;
 let doubtTimeout = 500;
 let newRoundTimeout = 500;
+let DeathTimeout = 500;
 function letsGo() {
     doc.addDarkListener();
     doc.createRulesSection();
@@ -74,11 +75,13 @@ function subtractLife(p) {
     doc.setPlayerStatus(p, Status.OOPS);
     p.lives -= 1;
     doc.drawLives(p);
-    setTimeout(() => {
-        if (p.lives == 0) {
+    if (p.lives == 0) {
+        setTimeout(() => {
             doc.setInfoMsg(elimMsg(p));
             doc.setPlayerStatus(p, Status.DEAD);
-        }
+        }, DeathTimeout);
+    }
+    setTimeout(() => {
     }, doubtTimeout);
 }
 function claim(claim) {
@@ -129,6 +132,7 @@ export function startGame() {
     const gameSpeed = Number(document.querySelector('input[name="game-speed"]:checked').value);
     npcTimeout = gameSpeed * 500;
     doubtTimeout = gameSpeed * 1000;
+    DeathTimeout = gameSpeed * 1000;
     newRoundTimeout = gameSpeed * 1500;
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
@@ -173,21 +177,21 @@ function diceVals() {
     return diceVals;
 }
 function initialDoubtMsg() {
-    return `Player ${currentPlayer.id} doubts Player ${prevPlayer().id}'s claim of <br>
+    return `${currentPlayer.name} doubts ${prevPlayer().name}'s claim of <br>
     ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} !`;
 }
 function justifiedCallMsg(pp, tot) {
     return `Justified call! Claim was <br>
      ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
-        but total was only ${tot}. Player ${pp.id} loses a life!`;
+        but total was only ${tot}. ${pp.name} loses a life!`;
 }
 function noDoubtMsg(tot) {
-    return `Player ${prevPlayer().id} was correct: Claim was <br>
+    return `${prevPlayer().name} was correct: Claim was <br>
     ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
-    and total was ${tot}. Player ${currentPlayer.id} loses a life!`;
+    and total was ${tot}. ${currentPlayer.name} loses a life!`;
 }
 function elimMsg(pp) {
-    return `Player ${pp.id} has been eliminated!`;
+    return `${pp.name} has been eliminated!`;
 }
 function getNumOtherDice(p) {
     return players.filter(pl => pl.id != p.id && pl.lives > 0).map(pl => pl.dice).flat().length;
