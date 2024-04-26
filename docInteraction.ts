@@ -170,7 +170,7 @@ export function deactivatePlayerTurnSection() {
     });
 }
 
-export function activatePlayerTurnSection(currentClaim: Claim) {
+export function activatePlayerTurnSection(currentClaim: Claim, claim: (Claim) => void, currentNumDice: number) {
     const playerTurnSection = document.getElementById('player-turn-section');
     const interactiveElements = playerTurnSection.querySelectorAll('button, input, select, textarea');
     playerTurnSection.setAttribute('active', 'true');
@@ -181,6 +181,16 @@ export function activatePlayerTurnSection(currentClaim: Claim) {
         const doubtButton = document.getElementById('doubt-section').querySelector('button');
         doubtButton.setAttribute('disabled', 'true');
     }
+    const slider = document.getElementById('claim-slider') as HTMLInputElement;
+    const minVal = Math.max(currentClaim.count, 1);
+    slider.min = minVal.toString();
+    slider.max = (currentNumDice * 5).toString();
+    slider.value = minVal.toString();
+    document.getElementById('claim-slider-label').textContent = slider.value;
+    const doubtButton = document.getElementById('doubt-section').querySelector('button');
+    doubtButton.disabled = currentClaim.count == 0;
+    updateClaimEventListeners(claim, currentClaim);
+    updateClaimButton(currentClaim);
 }
 
 export function createGameChoices(startGame: () => void) {
@@ -406,6 +416,12 @@ export function addEvListeners() {
             const doubtButton = document.getElementById('doubt-section').querySelector('button');
             if (!doubtButton.disabled) {
                 doubtButton.click();
+            }
+        }
+        if (!event.shiftKey && event.key === 'Enter') {
+            const claimButton = document.getElementById('claim-button') as HTMLButtonElement;
+            if (claimButton && !claimButton.disabled) {
+                claimButton.click();
             }
         }
         if (event.key === 'ArrowUp') {

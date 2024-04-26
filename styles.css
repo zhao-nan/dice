@@ -38,9 +38,7 @@ header {
 }
 
 .dark-mode-toggle {
-    position: absolute;
-    top: 100px;
-    right: 50px;
+    margin-left: auto;
     width: 50px;
     height: 25px;
     background-color: #7b91d8;
@@ -72,6 +70,19 @@ body.dark-mode {
 
 .dark-mode-toggle:not(.active) .moon {
     display: block;
+}
+
+.rules-button {
+    margin-left: auto;
+    font-size: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: solid 2px black;
+}
+
+.rules-button:hover {
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .highlighted-dice {
@@ -116,19 +127,6 @@ body.dark-mode {
     text-align: center;
 }
 
-.rules-button {
-    position: fixed;
-    right: 10px;
-    font-size: 20px;
-    padding: 10px;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border: solid 2px black;
-}
-
-.rules-button:hover {
-    background-color: rgba(255, 255, 255, 0.5);
-}
 
 .info-section {
     display: flex;

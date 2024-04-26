@@ -15,7 +15,7 @@ function letsGo() {
     doc.createGameChoices(startGame);
 }
 function npcTurn() {
-    doc.setInfoMsg(`Player ${currentPlayer.id}'s turn!`);
+    doc.setInfoMsg(`${currentPlayer.name}'s turn!`);
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
@@ -75,8 +75,10 @@ function subtractLife(p) {
     p.lives -= 1;
     doc.drawLives(p);
     setTimeout(() => {
-        doc.setInfoMsg(elimMsg(p));
-        doc.setPlayerStatus(p, Status.DEAD);
+        if (p.lives == 0) {
+            doc.setInfoMsg(elimMsg(p));
+            doc.setPlayerStatus(p, Status.DEAD);
+        }
     }, doubtTimeout);
 }
 function claim(claim) {
@@ -88,8 +90,7 @@ function claim(claim) {
 }
 function playerTurn() {
     doc.setInfoMsg(`Your turn!`);
-    doc.activatePlayerTurnSection(currentClaim());
-    updatePlayerTurnSection();
+    doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
 }
 function startNewRound(player) {
     doc.setInfoMsg(`Starting new round with ${currentNumPlayers} players! Starting: Player ${player.id}`);
@@ -141,18 +142,6 @@ export function startGame() {
     nextTurn();
 }
 ;
-function updatePlayerTurnSection() {
-    const slider = document.getElementById('claim-slider');
-    const minVal = Math.max(currentClaim().count, 1);
-    slider.min = minVal.toString();
-    slider.max = (currentNumPlayers * 5).toString();
-    slider.value = minVal.toString();
-    document.getElementById('claim-slider-label').textContent = slider.value;
-    const doubtButton = document.getElementById('doubt-section').querySelector('button');
-    doubtButton.disabled = currentClaim().count == 0;
-    doc.updateClaimEventListeners(claim, currentClaim());
-    doc.updateClaimButton(currentClaim());
-}
 function createPlayerSections(p1dice) {
     players.forEach((p) => {
         doc.createPlayerSection(p);
