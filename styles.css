@@ -8,10 +8,7 @@ body {
     background-color: #f0f0f0;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
-}
-
-body.dark-mode {
-    background-color: #333;
+    transition: background-color 0.5s ease;
 }
 
 header {
@@ -44,6 +41,37 @@ header {
     position: absolute;
     top: 100px;
     right: 50px;
+    width: 50px;
+    height: 25px;
+    background-color: #7b91d8;
+    border-radius: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 5px;
+    transition: background-color 0.5s ease;
+}
+
+body.dark-mode {
+    background-color: #333;
+}
+
+.dark-mode-toggle.active {
+    background-color: #695a23;
+}
+
+.dark-mode-toggle .sun,
+.dark-mode-toggle .moon {
+    display: none;
+}
+
+.dark-mode-toggle.active .sun {
+    display: block;
+}
+
+.dark-mode-toggle:not(.active) .moon {
+    display: block;
 }
 
 .highlighted-dice {
@@ -65,13 +93,27 @@ header {
 }
 
 .rules {
-    font-size: large;
+    font-size: 25px;
     font-weight: normal;
-    color: white;
-    width: 333px;
-    height: 333px;
-    background-color: rgba(0, 0, 0, 0.85);
+    color: rgb(0, 0, 0);
+    width: 450px;
+    height: 500px;
+    background-color: rgba(255, 255, 255);
     justify-content: center;
+    text-shadow: none;
+}
+
+.keys {
+    display: inline-block;
+    font-size: medium;
+    color: #333;
+    background-color: #f7f7f7;
+    border: 1px solid #b4b4b4;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    box-shadow: 0 3px #999;
+    text-align: center;
 }
 
 .rules-button {
@@ -283,6 +325,7 @@ button {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     gap: 15px;
     font-size: 3em;
     font-weight: bold;

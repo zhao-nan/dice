@@ -3,8 +3,9 @@ import { startGame } from './dice.js';
 let listenersAlreadyAdded = false;
 export function addDarkListener() {
     const darkToggle = document.getElementById('darkModeToggle');
-    darkToggle.addEventListener('change', function () {
-        document.body.classList.toggle('dark-mode', this.checked);
+    darkToggle.addEventListener('click', function () {
+        document.body.classList.toggle('dark-mode');
+        this.classList.toggle('active');
     });
 }
 export function createElement(type, props, parent) {
@@ -270,6 +271,10 @@ export function createPlayerTurnSection(doubt, claim, currentClaim) {
     const sliderDiv = createElement('div', {
         className: 'slider-div'
     }, claimSection);
+    createElement('button', {
+        id: 'slider-down-button',
+        textContent: '↓'
+    }, sliderDiv);
     createElement('input', {
         type: 'range',
         id: 'claim-slider',
@@ -277,6 +282,10 @@ export function createPlayerTurnSection(doubt, claim, currentClaim) {
     }, sliderDiv);
     createElement('label', {
         id: 'claim-slider-label'
+    }, sliderDiv);
+    createElement('button', {
+        id: 'slider-up-button',
+        textContent: '↑'
     }, sliderDiv);
     const claimDice = document.createElement('div');
     claimDice.className = 'claim-dice';
@@ -320,49 +329,62 @@ export function addEvListeners() {
     if (listenersAlreadyAdded)
         return;
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'd') {
+        if (event.shiftKey && event.key === 'Enter') {
             const doubtButton = document.getElementById('doubt-section').querySelector('button');
             if (!doubtButton.disabled) {
                 doubtButton.click();
             }
         }
         if (event.key === 'ArrowUp') {
-            const slider = document.getElementById('claim-slider');
-            const sliderValue = parseInt(slider.value);
-            if (sliderValue < parseInt(slider.max)) {
-                slider.value = (sliderValue + 1).toString();
-                // Trigger the input event manually to update the button state and label
-                slider.dispatchEvent(new Event('input'));
-            }
+            sliderUp();
         }
         else if (event.key === 'ArrowDown') {
-            const slider = document.getElementById('claim-slider');
-            const sliderValue = parseInt(slider.value);
-            if (sliderValue > parseInt(slider.min)) {
-                slider.value = (sliderValue - 1).toString();
-                // Trigger the input event manually to update the button state and label
-                slider.dispatchEvent(new Event('input'));
-            }
+            sliderDown();
         }
         else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-            const radioButtons = Array.from(document.querySelectorAll('input[type="radio"]'));
-            const selectedRadioButton = radioButtons.find(radio => radio.checked);
-            if (selectedRadioButton) {
-                const selectedIndex = radioButtons.indexOf(selectedRadioButton);
-                if (event.key === 'ArrowLeft' && selectedIndex > 0) {
-                    const previousRadioButton = radioButtons[selectedIndex - 1];
-                    previousRadioButton.checked = true;
-                }
-                else if (event.key === 'ArrowRight' && selectedIndex < radioButtons.length - 1) {
-                    const nextRadioButton = radioButtons[selectedIndex + 1];
-                    nextRadioButton.checked = true;
-                }
-                // Trigger change event manually to update the button state
-                selectedRadioButton.dispatchEvent(new Event('change'));
-            }
+            changeRadioSel(event.key);
         }
     });
+    const sliderUpButton = document.getElementById('slider-up-button');
+    const sliderDownButton = document.getElementById('slider-down-button');
+    sliderUpButton.addEventListener('click', sliderUp);
+    sliderDownButton.addEventListener('click', sliderDown);
     listenersAlreadyAdded = true;
+}
+function sliderUp() {
+    const slider = document.getElementById('claim-slider');
+    const sliderValue = parseInt(slider.value);
+    if (sliderValue < parseInt(slider.max)) {
+        slider.value = (sliderValue + 1).toString();
+        // Trigger the input event manually to update the button state and label
+        slider.dispatchEvent(new Event('input'));
+    }
+}
+function sliderDown() {
+    const slider = document.getElementById('claim-slider');
+    const sliderValue = parseInt(slider.value);
+    if (sliderValue > parseInt(slider.min)) {
+        slider.value = (sliderValue - 1).toString();
+        // Trigger the input event manually to update the button state and label
+        slider.dispatchEvent(new Event('input'));
+    }
+}
+function changeRadioSel(key) {
+    const radioButtons = Array.from(document.querySelectorAll('input[type="radio"]'));
+    const selectedRadioButton = radioButtons.find(radio => radio.checked);
+    if (selectedRadioButton) {
+        const selectedIndex = radioButtons.indexOf(selectedRadioButton);
+        if (key === 'ArrowLeft' && selectedIndex > 0) {
+            const previousRadioButton = radioButtons[selectedIndex - 1];
+            previousRadioButton.checked = true;
+        }
+        else if (key === 'ArrowRight' && selectedIndex < radioButtons.length - 1) {
+            const nextRadioButton = radioButtons[selectedIndex + 1];
+            nextRadioButton.checked = true;
+        }
+        // Trigger change event manually to update the button state
+        selectedRadioButton.dispatchEvent(new Event('change'));
+    }
 }
 export function getClaimDiceVal() {
     const rButt = document.querySelector('input[name="dice-val-claim"]:checked');
