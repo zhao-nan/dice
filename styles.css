@@ -38,10 +38,12 @@ header {
 }
 
 .dark-mode-toggle {
-    margin-left: auto;
+    position: absolute;
+    right: 110px;
     width: 50px;
     height: 25px;
-    background-color: #7b91d8;
+    background-color: #d67ca0;
+    font-size: 20px;
     border-radius: 25px;
     cursor: pointer;
     display: flex;
@@ -61,19 +63,25 @@ body.dark-mode {
 
 .dark-mode-toggle .sun,
 .dark-mode-toggle .moon {
-    display: none;
+    transition: opacity 0.5s ease;
 }
 
 .dark-mode-toggle.active .sun {
-    display: block;
+    opacity: 1;
 }
 
 .dark-mode-toggle:not(.active) .moon {
-    display: block;
+    opacity: 1;
+}
+
+.dark-mode-toggle.active .moon,
+.dark-mode-toggle:not(.active) .sun {
+    opacity: 0;
 }
 
 .rules-button {
-    margin-left: auto;
+    position: absolute;
+    right: 10px;
     font-size: 20px;
     padding: 10px;
     border-radius: 10px;
@@ -373,4 +381,9 @@ button:disabled {
     flex-direction: column;
     justify-content: center;
     gap: 20px;
+    margin: 20px;
+    padding: 20px;
+    background-color: rgb(158, 98, 237);
+    border: solid 2px black;
+    border-radius: 20px;
 }
