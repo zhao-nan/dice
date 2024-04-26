@@ -37,7 +37,8 @@ export function setInfoMsg(text) {
     const infoSection = document.getElementById('info-section');
     infoSection.innerHTML = text;
 }
-export function createPlayerSection(i) {
+export function createPlayerSection(p) {
+    let i = p.id;
     const container = i === 0 ?
         document.getElementById('player-container') :
         document.getElementById('npc-container');
@@ -47,14 +48,18 @@ export function createPlayerSection(i) {
         className: 'player-section'
     }, container);
     createElement('label', {
-        textContent: 'Player ' + i,
+        textContent: p.name,
         className: 'player-label'
     }, playerSection);
+    const imgContainer = createElement('container', {
+        id: 'player-img-container',
+        className: 'img-container'
+    }, playerSection);
     createElement('img', {
-        src: `img/player${i}.png`,
+        src: `img/${p.name}.png`,
         className: 'player-icon',
         width: 100
-    }, playerSection);
+    }, imgContainer);
     const playerActivity = createElement('span', {
         className: 'player-activity',
         id: `player-activity${i}`,
@@ -215,10 +220,10 @@ function restartGame() {
     document.getElementById('npc-container').innerHTML = '';
     createGameChoices(startGame);
 }
-export function setPlayerStatus(playerNum, status) {
-    const activity = document.getElementById('player-activity' + playerNum);
+export function setPlayerStatus(player, status) {
+    const activity = document.getElementById('player-activity' + player.id);
     activity.setAttribute('status', status.toLowerCase().replace('!', ''));
-    const statusLabel = document.getElementById('player-status' + playerNum);
+    const statusLabel = document.getElementById('player-status' + player.id);
     statusLabel.textContent = status;
 }
 export function updateClaimEventListeners(claim, currentClaim) {

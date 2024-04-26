@@ -1,5 +1,5 @@
 import * as util from './util.js';
-import { Claim, Player } from './types.js';
+import { Claim, Player, Status } from './types.js';
 import { startGame } from './dice.js';
 
 let listenersAlreadyAdded: boolean = false;
@@ -47,8 +47,8 @@ export function setInfoMsg(text: string) {
     infoSection.innerHTML = text;
 }
 
-export function createPlayerSection(i: number) {
-
+export function createPlayerSection(p: Player) {
+    let i = p.id;
     const container = i === 0 ?
      document.getElementById('player-container') :
      document.getElementById('npc-container');
@@ -60,15 +60,20 @@ export function createPlayerSection(i: number) {
     }, container);
 
     createElement('label', {
-        textContent: 'Player ' + i,
+        textContent: p.name,
         className: 'player-label'
     }, playerSection);
 
+    const imgContainer = createElement('container', {
+        id: 'player-img-container',
+        className: 'img-container'
+    }, playerSection);
+
     createElement('img', {
-        src: `img/player${i}.png`,
+        src: `img/${p.name}.png`,
         className: 'player-icon',
         width: 100
-    }, playerSection);
+    }, imgContainer);
 
     const playerActivity = createElement('span', {
         className: 'player-activity',
@@ -260,10 +265,10 @@ function restartGame() {
     createGameChoices(startGame);
 }
 
-export function setPlayerStatus(playerNum: number, status: string) {
-    const activity = document.getElementById('player-activity' + playerNum);
+export function setPlayerStatus(player: Player, status: Status) {
+    const activity = document.getElementById('player-activity' + player.id);
     activity.setAttribute('status', status.toLowerCase().replace('!',''));
-    const statusLabel = document.getElementById('player-status' + playerNum);
+    const statusLabel = document.getElementById('player-status' + player.id);
     statusLabel.textContent = status;
 }
 

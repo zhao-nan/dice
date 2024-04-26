@@ -188,8 +188,16 @@ body.dark-mode {
     font-size: 25px;
 }
 
-.player-section>img {
+.player-section .img-container {
     height: 100px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-section .img-container img {
+    max-width: 100%;
 }
 
 #player-container .player-section {

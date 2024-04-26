@@ -1,4 +1,5 @@
 import * as npc from './npc.js';
+import { Status } from './types.js';
 import * as doc from './docInteraction.js';
 import * as util from './util.js';
 window.onload = letsGo;
@@ -27,9 +28,9 @@ function npcTurn() {
     }, npcTimeout);
 }
 function nextTurn() {
-    doc.setPlayerStatus(prevPlayer().id, 'Waiting');
+    doc.setPlayerStatus(prevPlayer(), Status.WAITING);
     currentPlayer = nextPlayer();
-    doc.setPlayerStatus(currentPlayer.id, 'Thinking');
+    doc.setPlayerStatus(currentPlayer, Status.THINKING);
     if (currentPlayer.id == 0) {
         playerTurn();
     }
@@ -39,7 +40,7 @@ function nextTurn() {
 }
 function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
-    doc.setPlayerStatus(currentPlayer.id, 'Doubt');
+    doc.setPlayerStatus(currentPlayer, Status.DOUBT);
     for (const p of players) {
         doc.updatePlayerSection(p, currentClaim(), false, true);
     }
@@ -53,7 +54,7 @@ function doubt() {
             subtractLife(pp);
             currentPlayer = prevPlayer();
             setTimeout(() => {
-                doc.setPlayerStatus(nextPlayer().id, 'Waiting');
+                doc.setPlayerStatus(nextPlayer(), Status.WAITING);
                 startNewRound(prevPlayer());
             }, doubtTimeout);
         }
@@ -62,7 +63,7 @@ function doubt() {
             doc.setInfoMsg(noDoubtMsg(tot));
             subtractLife(currentPlayer);
             setTimeout(() => {
-                doc.setPlayerStatus(prevPlayer().id, 'Waiting');
+                doc.setPlayerStatus(prevPlayer(), Status.WAITING);
                 startNewRound(currentPlayer);
             }, doubtTimeout);
         }
@@ -70,17 +71,17 @@ function doubt() {
     }, newRoundTimeout);
 }
 function subtractLife(p) {
-    doc.setPlayerStatus(p.id, 'Oops!');
+    doc.setPlayerStatus(p, Status.OOPS);
     p.lives -= 1;
     doc.drawLives(p);
     setTimeout(() => {
         doc.setInfoMsg(elimMsg(p));
-        doc.setPlayerStatus(p.id, 'dead');
+        doc.setPlayerStatus(p, Status.DEAD);
     }, doubtTimeout);
 }
 function claim(claim) {
     currentPlayer.claim = claim;
-    doc.setPlayerStatus(currentPlayer.id, 'Claim');
+    doc.setPlayerStatus(currentPlayer, Status.CLAIM);
     doc.updatePlayerSection(prevPlayer(), currentClaim(), false, false);
     doc.updatePlayerSection(currentPlayer, currentClaim(), true, false);
     nextTurn();
@@ -95,7 +96,7 @@ function startNewRound(player) {
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
         doc.setInfoMsg('Player ' + winner.id + ' wins!');
-        doc.setPlayerStatus(winner.id, 'Winner!');
+        doc.setPlayerStatus(winner, Status.WINNER);
         doc.activateNewGameButton();
     }
     else {
@@ -115,6 +116,13 @@ function startNewRound(player) {
 }
 export function startGame() {
     doc.setInfoMsg('Starting game...');
+    let names = ['Stag', 'Fishy', 'Meow', 'Runner', 'Butterfly', 'Tank', 'Klaus'];
+    // permute the names
+    for (let i = names.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [names[i], names[j]] = [names[j], names[i]];
+    }
+    names.push('You');
     const rButts = Array.from(document.getElementsByName('num-players'));
     currentNumPlayers = Number(rButts.find(r => r.checked).value);
     const gameSpeed = Number(document.querySelector('input[name="game-speed"]:checked').value);
@@ -123,11 +131,11 @@ export function startGame() {
     newRoundTimeout = gameSpeed * 1500;
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
-        players.push({ id: i, lives: 3, claim: { count: 0, diceVal: 0 }, dice: util.roll5dice() });
+        players.push({ name: names[7 - i], id: i, lives: 3, claim: { count: 0, diceVal: 0 }, dice: util.roll5dice() });
     }
     doc.activateMainSection();
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)];
-    createPlayerSections(currentNumPlayers, diceVals[0]);
+    createPlayerSections(diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
     players.forEach((p) => { doc.updatePlayerSection(p, currentClaim(), false, false); });
     nextTurn();
@@ -145,11 +153,11 @@ function updatePlayerTurnSection() {
     doc.updateClaimEventListeners(claim, currentClaim());
     doc.updateClaimButton(currentClaim());
 }
-function createPlayerSections(numPlayers, p1dice) {
-    for (let i = 0; i < numPlayers; i++) {
-        doc.createPlayerSection(i);
-        doc.setPlayerStatus(i, 'waiting');
-    }
+function createPlayerSections(p1dice) {
+    players.forEach((p) => {
+        doc.createPlayerSection(p);
+        doc.setPlayerStatus(p, Status.WAITING);
+    });
 }
 function resetClaims() {
     players.forEach(p => p.claim = { count: 0, diceVal: 0 });
