@@ -1,4 +1,5 @@
 import * as util from './util.js';
+import { Status } from './types.js';
 import { startGame } from './dice.js';
 let listenersAlreadyAdded = false;
 export function addDarkListener() {
@@ -100,22 +101,12 @@ export function drawLives(player) {
     livesContainer.innerHTML = '';
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
-export function updatePlayerSection(p, currentClaim, showClaim, showDice) {
+export function updatePlayerSection(p, currentClaim, showDice) {
     const playerClaimVal = document.getElementById('player-claim-val' + p.id);
-    if (playerClaimVal == null) {
-        console.log('Player claim val is null: ' + 'player-claim-val' + p.id);
-        return;
-    }
     const playerClaimDie = document.getElementById('player-claim-die' + p.id);
-    if (showClaim) {
+    if (p.claim.count > 0) {
         playerClaimVal.textContent = p.claim.count.toString();
-        playerClaimVal.style.display = 'inline';
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
-        playerClaimDie.style.display = 'inline';
-    }
-    else {
-        playerClaimVal.style.display = 'none';
-        playerClaimDie.style.display = 'none';
     }
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i));
@@ -234,7 +225,32 @@ export function setPlayerStatus(player, status) {
     const activity = document.getElementById('player-activity' + player.id);
     activity.setAttribute('status', status.toLowerCase().replace('!', ''));
     const statusLabel = document.getElementById('player-status' + player.id);
-    statusLabel.textContent = status;
+    let txt;
+    switch (status) {
+        case Status.WAITING:
+            txt = "😴";
+            break;
+        case Status.CLAIM:
+            txt = "❗";
+            break;
+        case Status.THINKING:
+            txt = "🤔";
+            break;
+        case Status.DOUBT:
+            txt = "🧐";
+            break;
+        case Status.OOPS:
+            txt = "😱";
+            break;
+        case Status.DEAD:
+            txt = "🪦";
+            break;
+        case Status.WINNER:
+            txt = "✌️🎉🥳";
+            break;
+    }
+    ;
+    statusLabel.textContent = txt;
 }
 export function updateClaimEventListeners(claim, currentClaim) {
     const claimButton = document.getElementById('claim-button');

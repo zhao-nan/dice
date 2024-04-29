@@ -43,9 +43,9 @@ function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
     doc.setPlayerStatus(currentPlayer, Status.DOUBT);
     for (const p of players) {
-        doc.updatePlayerSection(p, currentClaim(), false, true);
+        doc.updatePlayerSection(p, currentClaim(), true);
     }
-    doc.updatePlayerSection(prevPlayer(), currentClaim(), true, true);
+    doc.updatePlayerSection(prevPlayer(), currentClaim(), true);
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
@@ -87,8 +87,8 @@ function subtractLife(p) {
 function claim(claim) {
     currentPlayer.claim = claim;
     doc.setPlayerStatus(currentPlayer, Status.CLAIM);
-    doc.updatePlayerSection(prevPlayer(), currentClaim(), false, false);
-    doc.updatePlayerSection(currentPlayer, currentClaim(), true, false);
+    doc.updatePlayerSection(prevPlayer(), currentClaim(), false);
+    doc.updatePlayerSection(currentPlayer, currentClaim(), false);
     nextTurn();
 }
 function playerTurn() {
@@ -111,7 +111,7 @@ function startNewRound(player) {
             else {
                 p.dice = [0, 0, 0, 0, 0];
             }
-            doc.updatePlayerSection(p, currentClaim(), false, false);
+            doc.updatePlayerSection(p, currentClaim(), false);
         });
         resetClaims();
         currentPlayer = prevPlayer();
@@ -142,7 +142,7 @@ export function startGame() {
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)];
     createPlayerSections(diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
-    players.forEach((p) => { doc.updatePlayerSection(p, currentClaim(), false, false); });
+    players.forEach((p) => { doc.updatePlayerSection(p, currentClaim(), false); });
     nextTurn();
 }
 ;

@@ -125,22 +125,14 @@ export function drawLives(player: Player) {
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
 
-export function updatePlayerSection(p: Player, currentClaim: Claim, showClaim: boolean, showDice: boolean) {
+export function updatePlayerSection(p: Player, currentClaim: Claim, showDice: boolean) {
     const playerClaimVal = document.getElementById('player-claim-val' + p.id) as HTMLSpanElement;
-    if (playerClaimVal == null) {
-        console.log('Player claim val is null: ' + 'player-claim-val' + p.id);
-        return;
-    }
     const playerClaimDie = document.getElementById('player-claim-die' + p.id) as HTMLImageElement;
-    if (showClaim) {
+    if (p.claim.count > 0) {
         playerClaimVal.textContent = p.claim.count.toString();
-        playerClaimVal.style.display = 'inline';
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
-        playerClaimDie.style.display = 'inline';
-    } else {
-        playerClaimVal.style.display = 'none';
-        playerClaimDie.style.display = 'none';
     }
+
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i)) as HTMLImageElement;
         if (p.lives <= 0) {
@@ -279,7 +271,17 @@ export function setPlayerStatus(player: Player, status: Status) {
     const activity = document.getElementById('player-activity' + player.id);
     activity.setAttribute('status', status.toLowerCase().replace('!',''));
     const statusLabel = document.getElementById('player-status' + player.id);
-    statusLabel.textContent = status;
+    let txt: string;
+    switch (status)  {
+        case Status.WAITING: txt = "😴"; break;
+        case Status.CLAIM: txt = "❗"; break;
+        case Status.THINKING: txt = "🤔"; break;
+        case Status.DOUBT: txt = "🧐"; break;
+        case Status.OOPS: txt = "😱"; break;
+        case Status.DEAD: txt = "🪦"; break;
+        case Status.WINNER: txt = "✌️🎉🥳"; break;
+    };
+    statusLabel.textContent = txt;
 }
 
 export function updateClaimEventListeners(claim: (Claim) => void, currentClaim: Claim) {

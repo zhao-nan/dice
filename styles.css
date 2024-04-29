@@ -211,6 +211,21 @@ body.dark-mode {
     width: 40px;
 }
 
+.player-claim {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    gap: 10px;
+    transition: all 0.25s;
+}
+
+.player-claim img {
+    width: 50px;
+    height: 50px;
+}
+
 .player-activity {
     display: flex;
     flex-direction: row;
@@ -224,11 +239,12 @@ body.dark-mode {
     min-height: 70px;
     border: solid 2px rebeccapurple;
     border-radius: 10px;
-    transition: ease-in-out 0.25s;
+    transition: all 1s;
 }
 
 .player-status {
-    font-size: medium;
+    font-size: 40px;
+    transition: all 1s;
 }
 
 .player-activity[status="waiting"] {
@@ -239,6 +255,9 @@ body.dark-mode {
 }
 .player-activity[status="claim"] {
     background-color: lightblue;
+}
+.player-activity[status="claim"] .player-claim {
+    opacity: 1;
 }
 .player-activity[status="doubt"] {
     background-color: orange;
@@ -258,10 +277,13 @@ body.dark-mode {
         rebeccapurple,
         lightblue,
         lightgreen
-    );
-}
+        );
+    }
 .player-activity[status="dead"] img {
     display: none;
+}
+.player-activity:not([status="claim"]) .player-claim {
+    opacity: 0;
 }
 
 .dice-container, .lives-container {
@@ -285,19 +307,6 @@ body.dark-mode {
 .dice-container {
     display: flex;
     justify-content: center;
-}
-
-.player-claim {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.player-claim img {
-    width: 50px;
-    height: 50px;
 }
 
 .doubt-section {
