@@ -89,10 +89,14 @@ export function createPlayerSection(p) {
         id: `lives-container${i}`
     }, playerSection);
     for (let j = 1; j <= 5; j++) {
+        const imgContainer = createElement('img-container', {
+            id: util.playerDieImgId(i, j) + '-container',
+            className: 'player-die-img-container',
+        }, document.getElementById(`dice-container${i}`));
         createElement('img', {
             id: util.playerDieImgId(i, j),
             className: 'player-die-img',
-        }, document.getElementById(`dice-container${i}`));
+        }, imgContainer);
     }
     return playerSection;
 }
@@ -101,7 +105,7 @@ export function drawLives(player) {
     livesContainer.innerHTML = '';
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
-export function updatePlayerSection(p, currentClaim, showDice) {
+export function updatePlayerSection(p) {
     const playerClaimVal = document.getElementById('player-claim-val' + p.id);
     const playerClaimDie = document.getElementById('player-claim-die' + p.id);
     if (p.claim.count > 0) {
@@ -114,20 +118,28 @@ export function updatePlayerSection(p, currentClaim, showDice) {
         if (p.lives <= 0) {
             resultImg.style.display = 'none';
         }
-        else if (showDice || p.id == 0) {
-            resultImg.src = util.getDiceImgSrc(p.dice[i - 1]);
-            if (p.dice[i - 1] == 1 || p.dice[i - 1] == currentClaim.diceVal) {
-                resultImg.classList.add('highlighted-dice');
-            }
-        }
         else {
-            resultImg.src = 'img/qm.png';
-        }
-        if (!showDice) {
-            resultImg.classList.remove('highlighted-dice');
+            resultImg.src = util.getDiceImgSrc(p.dice[i - 1]);
         }
     }
     drawLives(p);
+}
+export function reveal(num) {
+    const diceImgs = document.querySelectorAll('.player-die-img-container');
+    diceImgs.forEach((cont) => {
+        cont.classList.add('revealed');
+        const img = cont.querySelector('img');
+        if (img.src.includes('dice1') || img.src.includes('dice' + num.toString())) {
+            img.classList.add('highlighted-dice');
+        }
+    });
+}
+export function hide() {
+    const diceImgs = document.querySelectorAll('.player-die-img-container');
+    diceImgs.forEach((cont) => {
+        cont.classList.remove('revealed');
+        cont.querySelector('img').classList.remove('highlighted-dice');
+    });
 }
 export function deactivatePlayerTurnSection() {
     const playerTurnSection = document.getElementById('player-turn-section');
@@ -247,7 +259,7 @@ export function setPlayerStatus(player, status) {
             txt = "🪦";
             break;
         case Status.WINNER:
-            txt = "✌️🎉🥳";
+            txt = "🎉✌️🥳";
             break;
     }
     ;

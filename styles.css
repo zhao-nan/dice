@@ -48,7 +48,7 @@ header {
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
     padding: 5px;
     transition: background-color 0.5s ease;
 }
@@ -153,12 +153,6 @@ body.dark-mode {
     border-radius: 20px;
 }
 
-.dice-container img {
-    width: 25px;
-    height: 25px;
-    margin: 0 5px;
-}
-
 #human-player-container {
     display: flex;
     flex-direction: row;
@@ -204,6 +198,11 @@ body.dark-mode {
 
 #player-container .player-section {
     background-color: lightcoral;
+}
+
+#player-container .player-section .dice-container {
+    width: 270px;
+    height: 44px;
 }
 
 #player-container .player-section .dice-container img {
@@ -278,7 +277,10 @@ body.dark-mode {
         lightblue,
         lightgreen
         );
-    }
+}
+.player-activity[status="winner"] .player-claim {
+    display: none;
+}
 .player-activity[status="dead"] img {
     display: none;
 }
@@ -286,12 +288,11 @@ body.dark-mode {
     opacity: 0;
 }
 
-.dice-container, .lives-container {
+.lives-container {
     min-height: 30px;
     display: flex;
     align-items: center;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    transition: all 1s;
 }
 
 .player-turn-section {
@@ -307,7 +308,41 @@ body.dark-mode {
 
 .dice-container {
     display: flex;
+    height: 40px;
     justify-content: center;
+}
+
+.dice-container img {
+    width: 30px;
+    height: 30px;
+    margin: 0 5px;
+}
+
+.npc-container .player-die-img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 40px;
+    background-repeat: no-repeat;
+    gap: 10px;
+}
+
+.npc-container .player-die-img-container.revealed {
+    background-image: none;
+    opacity: 1;
+}
+
+.npc-container .player-die-img-container:not(.revealed) {
+    background-image: url("img/quma.png");
+}
+
+.npc-container .player-die-img-container.revealed img {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+.npc-container .player-die-img-container:not(.revealed) img{
+    opacity: 0;
 }
 
 .doubt-section {

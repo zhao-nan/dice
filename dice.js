@@ -42,10 +42,11 @@ function nextTurn() {
 function doubt() {
     doc.setInfoMsg(initialDoubtMsg());
     doc.setPlayerStatus(currentPlayer, Status.DOUBT);
+    doc.reveal(currentClaim().diceVal);
     for (const p of players) {
-        doc.updatePlayerSection(p, currentClaim(), true);
+        doc.updatePlayerSection(p);
     }
-    doc.updatePlayerSection(prevPlayer(), currentClaim(), true);
+    doc.updatePlayerSection(prevPlayer());
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
@@ -76,8 +77,8 @@ function subtractLife(p) {
     p.lives -= 1;
     doc.drawLives(p);
     if (p.lives == 0) {
+        doc.setInfoMsg(elimMsg(p));
         setTimeout(() => {
-            doc.setInfoMsg(elimMsg(p));
             doc.setPlayerStatus(p, Status.DEAD);
         }, DeathTimeout);
     }
@@ -87,8 +88,8 @@ function subtractLife(p) {
 function claim(claim) {
     currentPlayer.claim = claim;
     doc.setPlayerStatus(currentPlayer, Status.CLAIM);
-    doc.updatePlayerSection(prevPlayer(), currentClaim(), false);
-    doc.updatePlayerSection(currentPlayer, currentClaim(), false);
+    doc.updatePlayerSection(prevPlayer());
+    doc.updatePlayerSection(currentPlayer);
     nextTurn();
 }
 function playerTurn() {
@@ -96,6 +97,7 @@ function playerTurn() {
     doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
 }
 function startNewRound(player) {
+    doc.hide();
     doc.setInfoMsg(`Starting new round with ${currentNumPlayers} players! Starting: Player ${player.id}`);
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
@@ -111,7 +113,7 @@ function startNewRound(player) {
             else {
                 p.dice = [0, 0, 0, 0, 0];
             }
-            doc.updatePlayerSection(p, currentClaim(), false);
+            doc.updatePlayerSection(p);
         });
         resetClaims();
         currentPlayer = prevPlayer();
@@ -142,7 +144,8 @@ export function startGame() {
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)];
     createPlayerSections(diceVals[0]);
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
-    players.forEach((p) => { doc.updatePlayerSection(p, currentClaim(), false); });
+    doc.hide();
+    players.forEach((p) => { doc.updatePlayerSection(p); });
     nextTurn();
 }
 ;
