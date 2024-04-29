@@ -133,6 +133,7 @@ export function updatePlayerSection(p: Player, currentClaim: Claim, showDice: bo
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
     }
 
+    const imgSection: HTMLElement = document.getElementById('player-img-container');
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i)) as HTMLImageElement;
         if (p.lives <= 0) {
@@ -149,7 +150,6 @@ export function updatePlayerSection(p: Player, currentClaim: Claim, showDice: bo
             resultImg.classList.remove('highlighted-dice');
         }
     }
-    
     drawLives(p);
 }
 
@@ -176,7 +176,7 @@ export function activatePlayerTurnSection(currentClaim: Claim, claim: (Claim) =>
     const slider = document.getElementById('claim-slider') as HTMLInputElement;
     const minVal = Math.max(currentClaim.count, 1);
     slider.min = minVal.toString();
-    slider.max = (currentNumDice * 5).toString();
+    slider.max = currentNumDice.toString();
     slider.value = minVal.toString();
     document.getElementById('claim-slider-label').textContent = slider.value;
     const doubtButton = document.getElementById('doubt-section').querySelector('button');

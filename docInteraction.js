@@ -108,6 +108,7 @@ export function updatePlayerSection(p, currentClaim, showDice) {
         playerClaimVal.textContent = p.claim.count.toString();
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
     }
+    const imgSection = document.getElementById('player-img-container');
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i));
         if (p.lives <= 0) {
@@ -150,7 +151,7 @@ export function activatePlayerTurnSection(currentClaim, claim, currentNumDice) {
     const slider = document.getElementById('claim-slider');
     const minVal = Math.max(currentClaim.count, 1);
     slider.min = minVal.toString();
-    slider.max = (currentNumDice * 5).toString();
+    slider.max = currentNumDice.toString();
     slider.value = minVal.toString();
     document.getElementById('claim-slider-label').textContent = slider.value;
     const doubtButton = document.getElementById('doubt-section').querySelector('button');
