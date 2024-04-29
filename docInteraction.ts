@@ -295,7 +295,10 @@ export function setPlayerStatus(player: Player, status: Status) {
         case Status.THINKING: txt = "🤔"; break;
         case Status.DOUBT: txt = "🧐"; break;
         case Status.OOPS: txt = "😱"; break;
-        case Status.DEAD: txt = "🪦"; break;
+        case Status.DEAD: 
+            txt = "🪦";
+            document.getElementById('dice-container' + player.id).classList.add('dead');
+            break;
         case Status.WINNER: txt = "🎉✌️🥳"; break;
     };
     statusLabel.textContent = txt;

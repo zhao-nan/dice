@@ -257,6 +257,7 @@ export function setPlayerStatus(player, status) {
             break;
         case Status.DEAD:
             txt = "🪦";
+            document.getElementById('dice-container' + player.id).classList.add('dead');
             break;
         case Status.WINNER:
             txt = "🎉✌️🥳";
