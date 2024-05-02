@@ -353,7 +353,7 @@ export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => voi
     }, playerTurnSection);
 
     const doubtButton = createElement('button', {
-        textContent: 'Doubt!',
+        textContent: '🧐 Doubt! 🧐',
         disabled: true
     }, doubtSection);
     doubtButton.addEventListener('click', doubt);
@@ -413,7 +413,7 @@ export function createPlayerTurnSection(doubt: () => void, claim: (Claim) => voi
 
     createElement('button', {
         id: 'claim-button',
-        textContent: 'Make Claim',
+        textContent: '❗ Claim ❗',
         disabled: true
     }, claimSection);
 
