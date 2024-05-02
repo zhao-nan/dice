@@ -193,7 +193,8 @@ function createNumPlayerChoice(optionsPanel) {
             id: 'num-players' + i,
             checked: i === 5,
         }, numPlayersForm);
-        const label = createElement('label', { textContent: `${i}` }, numPlayersForm);
+        const label = createElement('label', { textContent: `${i}` }, radio);
+        label.setAttribute('for', 'num-players' + i);
         numPlayersForm.appendChild(radio);
         numPlayersForm.appendChild(label);
     }
@@ -210,6 +211,7 @@ function createGameSpeedChoice(optionsPanel) {
             checked: i === 1,
         }, gameSpeedForm);
         const label = createElement('label', { textContent: speeds[i] }, gameSpeedForm);
+        label.setAttribute('for', 'game-speed' + speeds[i]);
         gameSpeedForm.appendChild(radio);
         gameSpeedForm.appendChild(label);
     }

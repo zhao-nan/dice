@@ -135,6 +135,18 @@ body.dark-mode {
     text-align: center;
 }
 
+#options-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px;
+    padding: 20px;
+    background-color: rgb(204, 188, 225);
+    border: solid 2px black;
+    border-radius: 20px;
+    font-size: 20px;
+}
 
 .info-section {
     display: flex;
@@ -428,14 +440,3 @@ button:disabled {
     font-size: 2em;
 }
 
-#options-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px;
-    padding: 20px;
-    background-color: rgb(158, 98, 237);
-    border: solid 2px black;
-    border-radius: 20px;
-}
