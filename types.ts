@@ -18,6 +18,7 @@ export enum Status {
     CLAIM = 'Claim',
     DOUBT = 'Doubt',
     OOPS = 'Oops',
+    HEH = 'Heh',
     DEAD = 'Dead',
     WINNER = 'Winner',
 }

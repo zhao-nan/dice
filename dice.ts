@@ -20,7 +20,7 @@ function letsGo() {
 }
 
 function npcTurn() {
-    doc.setInfoMsg(`${currentPlayer.name}'s turn!`); 
+    doc.appendInfoNewline(`${currentPlayer.name}'s turn..  `); 
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c: Claim = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
@@ -45,7 +45,7 @@ function nextTurn() {
 }
 
 function doubt() {
-    doc.setInfoMsg(initialDoubtMsg());
+    doc.appendInfo('Doubt!');
     doc.setPlayerStatus(currentPlayer, Status.DOUBT);
     doc.reveal(currentClaim().diceVal);
     for (const p of players) {
@@ -56,8 +56,9 @@ function doubt() {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
             // Doubt justified
+            doc.setPlayerStatus(currentPlayer, Status.HEH);
             let pp = prevPlayer();
-            doc.setInfoMsg(justifiedCallMsg(pp, tot));
+            doc.appendInfoNewline(justifiedCallMsg(pp, tot));
             subtractLife(pp);
             currentPlayer = prevPlayer();
             setTimeout(() => {
@@ -66,7 +67,8 @@ function doubt() {
             }, doubtTimeout);
         } else {
             // Doubt unjustified
-            doc.setInfoMsg(noDoubtMsg(tot));
+            doc.appendInfoNewline(noDoubtMsg(tot));
+            doc.setPlayerStatus(prevPlayer(), Status.HEH);
             subtractLife(currentPlayer);
             setTimeout(() => {
                 doc.setPlayerStatus(prevPlayer(), Status.WAITING);
@@ -82,17 +84,15 @@ function subtractLife(p: Player) {
     p.lives -= 1;
     doc.drawLives(p);
     if (p.lives == 0) {
-        doc.setInfoMsg(elimMsg(p));
         setTimeout(() => {
+            doc.appendInfo(elimMsg(p));
             doc.setPlayerStatus(p, Status.DEAD);
         }, DeathTimeout);
     }
-    setTimeout(() => {
-        
-    }, doubtTimeout);
 }
 
 function claim(claim: Claim) {
+    doc.appendInfo(`Claim: ${claim.count} ${util.getDiceSymbol(claim.diceVal)}`);
     currentPlayer.claim = claim;
     doc.setPlayerStatus(currentPlayer, Status.CLAIM);
     doc.updatePlayerSection(prevPlayer());
@@ -101,16 +101,16 @@ function claim(claim: Claim) {
 }
 
 function playerTurn() {
-    doc.setInfoMsg(`Your turn!`);
+    doc.appendInfoNewline(`Your turn..  `);
     doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
 }
 
 function startNewRound(player: Player) {
     doc.hide();
-    doc.setInfoMsg(`Starting new round with ${currentNumPlayers} players! Starting: Player ${player.id}`);
+    doc.appendInfoNewline(`${player.name} starts the new round.`);
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
-        doc.setInfoMsg('Player ' + winner.id + ' wins!');
+        doc.appendInfo(winnerMsg(winner));
         doc.setPlayerStatus(winner, Status.WINNER);
         doc.activateNewGameButton();
     } else {
@@ -129,7 +129,7 @@ function startNewRound(player: Player) {
 }
 
 export function startGame() {
-    doc.setInfoMsg('Starting game...');
+    doc.appendInfoNewline('Starting game...');
 
     let names = ['Stag', 'Fishy', 'Meow', 'Runner', 'Butterfly', 'Tank', 'Klaus']
 
@@ -202,25 +202,32 @@ function diceVals() {
     return diceVals;
 }
 
-function initialDoubtMsg() {
-    return `${currentPlayer.name} doubts ${prevPlayer().name}'s claim of <br>
-    ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} !`
-}
-
 function justifiedCallMsg(pp: Player, tot: number) {
-    return `Justified call! Claim was <br>
-     ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
-        but total was only ${tot}. ${pp.name} loses a life!`;
+    return `Justified! Actual number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`
 }
 
 function noDoubtMsg(tot: number) {
-    return `${prevPlayer().name} was correct: Claim was <br>
-    ${currentClaim().count} ${util.getDiceSymbol(currentClaim().diceVal)} <br>
-    and total was ${tot}. ${currentPlayer.name} loses a life!`
+    return `${goodBidMsg(prevPlayer())} number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`
+}
+
+function goodBidMsg(p: Player) {
+    if (p.id == 0) return `Your bid was correct:`;
+    return `${p.name}'s bid was correct:`;
 }
 
 function elimMsg(pp: Player) {
-    return `${pp.name} has been eliminated!`;
+    if (pp.id == 0) return `You have been eliminated!`;
+        else return `${pp.name} has been eliminated!`;
+}
+
+function winnerMsg(winner: Player) {
+    if (winner.id == 0) return `You win!`;
+        else return `${winner.name} wins!`;
+}
+
+function loseLifeMsg(loser: Player) {
+    if (loser.id == 0) return `You lose a life!`;
+        else return `${loser.name} loses a life!`;
 }
 
 function getNumOtherDice(p: Player) {

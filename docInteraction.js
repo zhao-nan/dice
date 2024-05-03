@@ -34,9 +34,13 @@ export function createRulesSection() {
         }
     });
 }
-export function setInfoMsg(text) {
+export function appendInfoNewline(text) {
+    appendInfo("<br>" + text);
+}
+export function appendInfo(text) {
     const infoSection = document.getElementById('info-section');
-    infoSection.innerHTML = text;
+    infoSection.innerHTML += text;
+    infoSection.scrollTop = infoSection.scrollHeight;
 }
 export function createPlayerSection(p) {
     let i = p.id;
@@ -172,7 +176,7 @@ export function activatePlayerTurnSection(currentClaim, claim, currentNumDice) {
     updateClaimButton(currentClaim);
 }
 export function createGameChoices(startGame) {
-    setInfoMsg('Choose game options! :)');
+    appendInfo('Choose game options! :)');
     const optionsPanel = createElement('div', { id: 'options-panel' }, document.body);
     createNumPlayerChoice(optionsPanel);
     createGameSpeedChoice(optionsPanel);
@@ -257,6 +261,9 @@ export function setPlayerStatus(player, status) {
         case Status.OOPS:
             txt = "😱";
             break;
+        case Status.HEH:
+            txt = "😏";
+            break;
         case Status.DEAD:
             txt = "🪦";
             document.getElementById('dice-container' + player.id).classList.add('dead');
@@ -307,7 +314,7 @@ export function createPlayerTurnSection(doubt, claim, currentClaim) {
         className: 'doubt-section'
     }, playerTurnSection);
     const doubtButton = createElement('button', {
-        textContent: 'Doubt!',
+        textContent: '🧐 Doubt! 🧐',
         disabled: true
     }, doubtSection);
     doubtButton.addEventListener('click', doubt);
@@ -357,7 +364,7 @@ export function createPlayerTurnSection(doubt, claim, currentClaim) {
     claimSection.appendChild(claimDice);
     createElement('button', {
         id: 'claim-button',
-        textContent: 'Make Claim',
+        textContent: '❗ Claim ❗',
         disabled: true
     }, claimSection);
     addEvListeners();
@@ -369,7 +376,10 @@ export function updateClaimButton(currentClaim) {
     const claimCount = parseInt(slider.value);
     const claimValue = getClaimDiceVal();
     const claimButton = document.getElementById('claim-button');
-    claimButton.disabled = !util.isGreater({ count: claimCount, diceVal: claimValue }, currentClaim);
+    const pts = document.getElementById('player-turn-section');
+    claimButton.disabled =
+        !util.isGreater({ count: claimCount, diceVal: claimValue }, currentClaim)
+            || pts.getAttribute('active') === 'false';
     claimButton.focus();
 }
 export function addEvListeners() {

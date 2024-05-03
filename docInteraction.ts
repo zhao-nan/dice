@@ -42,9 +42,14 @@ export function createRulesSection() {
     });
 }
 
-export function setInfoMsg(text: string) {
+export function appendInfoNewline(text: string) {
+    appendInfo("<br>" + text);
+}
+
+export function appendInfo(text: string) {
     const infoSection = document.getElementById('info-section');
-    infoSection.innerHTML = text;
+    infoSection.innerHTML += text;
+    infoSection.scrollTop = infoSection.scrollHeight;
 }
 
 export function createPlayerSection(p: Player) {
@@ -203,7 +208,7 @@ export function activatePlayerTurnSection(currentClaim: Claim, claim: (Claim) =>
 }
 
 export function createGameChoices(startGame: () => void) {
-    setInfoMsg('Choose game options! :)');
+    appendInfo('Choose game options! :)');
     const optionsPanel = createElement('div', { id: 'options-panel' }, document.body);
     createNumPlayerChoice(optionsPanel);
 
@@ -296,6 +301,7 @@ export function setPlayerStatus(player: Player, status: Status) {
         case Status.THINKING: txt = "🤔"; break;
         case Status.DOUBT: txt = "🧐"; break;
         case Status.OOPS: txt = "😱"; break;
+        case Status.HEH: txt = "😏"; break;
         case Status.DEAD: 
             txt = "🪦";
             document.getElementById('dice-container' + player.id).classList.add('dead');
@@ -428,7 +434,10 @@ export function updateClaimButton(currentClaim: Claim) {
     const claimCount = parseInt(slider.value);
     const claimValue = getClaimDiceVal();
     const claimButton = document.getElementById('claim-button') as HTMLButtonElement;
-    claimButton.disabled = !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim);
+    const pts = document.getElementById('player-turn-section');
+    claimButton.disabled = 
+        !util.isGreater({count: claimCount, diceVal: claimValue}, currentClaim)
+        || pts.getAttribute('active') === 'false';
     claimButton.focus();
 }
 
