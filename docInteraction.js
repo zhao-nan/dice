@@ -42,6 +42,9 @@ export function appendInfo(text) {
     infoSection.innerHTML += text;
     infoSection.scrollTop = infoSection.scrollHeight;
 }
+export function clearInfo() {
+    document.getElementById('info-section').innerHTML = '';
+}
 export function createPlayerSection(p) {
     let i = p.id;
     const container = i === 0 ?
@@ -238,6 +241,7 @@ function restartGame() {
     document.getElementById('player-container').innerHTML = '';
     document.getElementById('player-turn-section').innerHTML = '';
     document.getElementById('npc-container').innerHTML = '';
+    document.getElementById('info-section').innerHTML = '';
     createGameChoices(startGame);
 }
 export function setPlayerStatus(player, status) {

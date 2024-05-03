@@ -20,7 +20,6 @@ function letsGo() {
 }
 
 function npcTurn() {
-    doc.appendInfoNewline(`${currentPlayer.name}'s turn..  `); 
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c: Claim = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
@@ -45,7 +44,7 @@ function nextTurn() {
 }
 
 function doubt() {
-    doc.appendInfo('Doubt!');
+    doc.appendInfoNewline(`${currentPlayer.name}: Doubt!`);
     doc.setPlayerStatus(currentPlayer, Status.DOUBT);
     doc.reveal(currentClaim().diceVal);
     for (const p of players) {
@@ -81,19 +80,20 @@ function doubt() {
 
 function subtractLife(p: Player) {
     doc.setPlayerStatus(p, Status.OOPS);
+    doc.appendInfoNewline(loseLifeMsg(p));
     p.lives -= 1;
     doc.drawLives(p);
     if (p.lives == 0) {
         setTimeout(() => {
-            doc.appendInfo(elimMsg(p));
+            doc.appendInfoNewline(elimMsg(p));
             doc.setPlayerStatus(p, Status.DEAD);
         }, DeathTimeout);
     }
 }
 
 function claim(claim: Claim) {
-    doc.appendInfo(`Claim: ${claim.count} ${util.getDiceSymbol(claim.diceVal)}`);
     currentPlayer.claim = claim;
+    doc.appendInfoNewline(claimMsg(currentPlayer));
     doc.setPlayerStatus(currentPlayer, Status.CLAIM);
     doc.updatePlayerSection(prevPlayer());
     doc.updatePlayerSection(currentPlayer);
@@ -107,13 +107,14 @@ function playerTurn() {
 
 function startNewRound(player: Player) {
     doc.hide();
-    doc.appendInfoNewline(`${player.name} starts the new round.`);
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
+        doc.clearInfo();
         doc.appendInfo(winnerMsg(winner));
         doc.setPlayerStatus(winner, Status.WINNER);
         doc.activateNewGameButton();
     } else {
+        doc.appendInfoNewline(`${player.name} starts the new round.`);
         players.forEach((p) => {
             if (p.lives > 0) {
                 p.dice = util.roll5dice();
@@ -228,6 +229,11 @@ function winnerMsg(winner: Player) {
 function loseLifeMsg(loser: Player) {
     if (loser.id == 0) return `You lose a life!`;
         else return `${loser.name} loses a life!`;
+}
+
+function claimMsg(p: Player) {
+    if (p.id == 0) return `You claim ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
+    return `${p.name} claims ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
 }
 
 function getNumOtherDice(p: Player) {
