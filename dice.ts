@@ -114,7 +114,6 @@ function startNewRound(player: Player) {
         doc.setPlayerStatus(winner, Status.WINNER);
         doc.activateNewGameButton();
     } else {
-        doc.appendInfoNewline(`${player.name} starts the new round.`);
         players.forEach((p) => {
             if (p.lives > 0) {
                 p.dice = util.roll5dice();
@@ -124,6 +123,7 @@ function startNewRound(player: Player) {
             doc.updatePlayerSection(p);
         });
         resetClaims();
+        doc.appendInfoNewline(`${currentPlayer.name} starts the new round.`);
         currentPlayer = prevPlayer();
         nextTurn();
     }

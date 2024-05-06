@@ -4,7 +4,6 @@ export function npcClaim(currentClaim, ownDice, numOtherDice) {
     // doubt if current claim is just too unlikely
     let prob = util.probOfClaim(currentClaim, ownDice, numOtherDice);
     if (prob < 0.5 && (rand - prob) > 0.5 || prob < 0.15) {
-        console.log("nah");
         return { count: 0, diceVal: 0 };
     }
     let freqs = getFreqs(ownDice);
