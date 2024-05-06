@@ -41,6 +41,7 @@ export function appendInfo(text) {
     const infoSection = document.getElementById('info-section');
     infoSection.innerHTML += text;
     infoSection.scrollTop = infoSection.scrollHeight;
+    console.log(text);
 }
 export function clearInfo() {
     document.getElementById('info-section').innerHTML = '';
@@ -263,10 +264,10 @@ export function setPlayerStatus(player, status) {
             txt = "🧐";
             break;
         case Status.OOPS:
-            txt = "😱";
+            txt = getLosingEmoji();
             break;
         case Status.HEH:
-            txt = "😏";
+            txt = getWinningEmoji();
             break;
         case Status.DEAD:
             txt = "🪦";
@@ -278,6 +279,14 @@ export function setPlayerStatus(player, status) {
     }
     ;
     statusLabel.textContent = txt;
+}
+function getWinningEmoji() {
+    const a = ["😏", "😎", "😤", "🤙"];
+    return a[Math.floor(Math.random() * a.length)];
+}
+function getLosingEmoji() {
+    const a = ["😵", "😱", "🥺", "😖"];
+    return a[Math.floor(Math.random() * a.length)];
 }
 export function updateClaimEventListeners(claim, currentClaim) {
     const claimButton = document.getElementById('claim-button');

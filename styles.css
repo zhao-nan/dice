@@ -301,6 +301,9 @@ body.dark-mode {
 .player-activity[status="oops"] {
     background-color: rgb(117, 33, 33);
 }
+.player-activity[status="heh"] {
+    background-color: rgb(102, 25, 143);
+}
 .player-activity[status="winner"] {
     background-image: linear-gradient(
         to right,

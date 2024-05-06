@@ -50,6 +50,7 @@ export function appendInfo(text: string) {
     const infoSection = document.getElementById('info-section');
     infoSection.innerHTML += text;
     infoSection.scrollTop = infoSection.scrollHeight;
+    console.log(text);
 }
 
 export function clearInfo() {
@@ -305,8 +306,8 @@ export function setPlayerStatus(player: Player, status: Status) {
         case Status.CLAIM: txt = "❗"; break;
         case Status.THINKING: txt = "🤔"; break;
         case Status.DOUBT: txt = "🧐"; break;
-        case Status.OOPS: txt = "😱"; break;
-        case Status.HEH: txt = "😏"; break;
+        case Status.OOPS: txt = getLosingEmoji(); break;
+        case Status.HEH: txt = getWinningEmoji(); break;
         case Status.DEAD: 
             txt = "🪦";
             document.getElementById('dice-container' + player.id).classList.add('dead');
@@ -314,6 +315,16 @@ export function setPlayerStatus(player: Player, status: Status) {
         case Status.WINNER: txt = "🎉✌️🥳"; break;
     };
     statusLabel.textContent = txt;
+}
+
+function getWinningEmoji() {
+    const a = ["😏", "😎", "😤", "🤙"]
+    return a[Math.floor(Math.random() * a.length)];
+}
+
+function getLosingEmoji() {
+    const a = ["😵", "😱", "🥺", "😖"]
+    return a[Math.floor(Math.random() * a.length)];
 }
 
 export function updateClaimEventListeners(claim: (Claim) => void, currentClaim: Claim) {

@@ -35,7 +35,8 @@ export function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: n
         // no safe bet, so just go with the most likely
         const doubtRand = Math.random();
         if (doubtRand > prob) {
-            console.log("doubting because of prob: " + prob + " and rand: " + doubtRand);
+            console.log(`doubting claim ${currentClaim.count} of 
+            ${currentClaim.diceVal} because of prob: ${prob} and rand: ${doubtRand}`);
             return {count: 0, diceVal: 0};
         } else {
             let _count = fav > currentClaim.diceVal ? currentClaim.count : currentClaim.count + 1;
