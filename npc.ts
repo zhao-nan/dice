@@ -16,27 +16,17 @@ export function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: n
 
     let stillEarly = currentClaim.count <= numOtherDice / 5;
 
-    // bluffing bid
-    let bluffFav = Math.floor(Math.random() * 6) + 1;
-    while (bluffFav === val || bluffFav === 1) {
-        bluffFav = Math.floor(Math.random() * 6) + 1;
-    }
-    let bluffVal = Math.floor(freqs[fav] + numOtherDice / 3 - Math.ceil(Math.random() * 4));
-    let bluffClaim = {count: bluffVal, diceVal: bluffFav};
+    let bluff = bluffClaim(fav, freqs, numOtherDice);
     let safe = safeClaim(currentClaim, numOtherDice, fav, val);
 
-    if (stillEarly && rand > 0.5 && util.isGreater(bluffClaim, currentClaim)) {
-        // can't read my poker face
-        return bluffClaim;
-    } else if (safe.count > 0) {
-        // playing it safe
+    if (stillEarly && rand > 0.5 && util.isGreater(bluff, currentClaim)) {
+        return bluff;
+    } else if (safe.count > 0 && safe.diceVal > 0) {
         return safe;
     } else {
         // no safe bet, so just go with the most likely
         const doubtRand = Math.random();
         if (currentClaim.count > 0 && doubtRand > prob) {
-            console.log(`doubting claim ${currentClaim.count} of 
-            ${currentClaim.diceVal} because of prob: ${prob} and rand: ${doubtRand}`);
             return {count: 0, diceVal: 0};
         } else {
             let _count = fav > currentClaim.diceVal ? currentClaim.count : currentClaim.count + 1;
@@ -45,6 +35,16 @@ export function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: n
         }
     } 
 
+}
+
+function bluffClaim(fav: number, freqs: number[], numOtherDice: number) {
+    let bluffFav = Math.floor(Math.random() * 6) + 1;
+    while (bluffFav === fav || bluffFav === 1) {
+        bluffFav = Math.floor(Math.random() * 6) + 1;
+    }
+    let tmpBluffCount = Math.floor(freqs[fav] + numOtherDice / 3 - Math.ceil(Math.random() * 4));
+    let bluffCount = Math.max(1, tmpBluffCount);
+    return {count: bluffCount, diceVal: bluffFav};
 }
 
 function safeClaim(currentClaim: Claim, numOtherDice: number, diceVal: number, ownNumOf: number) {

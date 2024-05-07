@@ -23,7 +23,7 @@ function npcTurn() {
     doc.deactivatePlayerTurnSection();
     setTimeout(() => {
         let c: Claim = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
-        if (c.count == 0) {
+        if (c.diceVal == 0 && c.count == 0) {
             doubt();
         } else {
             claim(c);
@@ -123,8 +123,8 @@ function startNewRound(player: Player) {
             doc.updatePlayerSection(p);
         });
         resetClaims();
-        doc.appendInfoNewline(`${currentPlayer.name} starts the new round.`);
         currentPlayer = prevPlayer();
+        doc.appendInfoNewline(startRoundMsg(nextPlayer()));
         nextTurn();
     }
 }
@@ -151,22 +151,22 @@ export function startGame() {
     newRoundTimeout = gameSpeed * 1500;
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
-        players.push({name: names[7-i], id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: util.roll5dice()});
+        players.push({name: names[7-i], id: i, lives: 3, claim: {count: 0, diceVal: 0}, dice: []});
     }
 
     doc.activateMainSection();
 
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
-    createPlayerSections(diceVals[0]);
+    createPlayerSections();
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
 
     doc.hide();
     players.forEach((p) => {doc.updatePlayerSection(p)});
 
-    nextTurn();
+    startNewRound(currentPlayer);
 };
 
-function createPlayerSections(p1dice: number[]) {
+function createPlayerSections() {
     players.forEach((p) => {
         doc.createPlayerSection(p);
         doc.setPlayerStatus(p, Status.WAITING);
@@ -234,6 +234,11 @@ function loseLifeMsg(loser: Player) {
 function claimMsg(p: Player) {
     if (p.id == 0) return `You claim ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
     return `${p.name} claims ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
+}
+
+function startRoundMsg(p: Player) {
+    if (p.id == 0) return `You start the round.`;
+    return `${p.name} starts the round.`;
 }
 
 function getNumOtherDice(p: Player) {

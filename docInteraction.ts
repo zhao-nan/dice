@@ -148,7 +148,6 @@ export function updatePlayerSection(p: Player) {
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
     }
 
-    const imgSection: HTMLElement = document.getElementById('player-img-container');
     for (let i = 1; i <= 5; i++) {
         const resultImg = document.getElementById(util.playerDieImgId(p.id, i)) as HTMLImageElement;
         if (p.lives <= 0) {
