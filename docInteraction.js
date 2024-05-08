@@ -130,22 +130,20 @@ export function updatePlayerSection(p) {
     drawLives(p);
 }
 export function reveal(num) {
-    const diceImgs = document.querySelectorAll('.player-die-img-container');
-    appendInfoNewline("found dice imgs: " + diceImgs.length);
-    diceImgs.forEach((cont) => {
-        cont.classList.add('revealed');
-        const img = cont.querySelector('img');
-        appendInfoNewline("found img: " + img.src);
+    document.body.setAttribute('revealed', 'true');
+    document.getElementById('npc-container').setAttribute('revealed', 'true');
+    const imgList = document.querySelectorAll('.player-die-img');
+    imgList.forEach((img) => {
         if (img.src.includes('dice1') || img.src.includes('dice' + num.toString())) {
-            appendInfoNewline("highlighting img: " + img.src);
             img.classList.add('highlighted-dice');
         }
     });
 }
 export function hide() {
+    document.body.setAttribute('revealed', 'false');
+    document.getElementById('npc-container').setAttribute('revealed', 'false');
     const diceImgs = document.querySelectorAll('.player-die-img-container');
     diceImgs.forEach((cont) => {
-        cont.classList.remove('revealed');
         cont.querySelector('img').classList.remove('highlighted-dice');
     });
 }

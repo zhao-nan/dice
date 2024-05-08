@@ -47,11 +47,11 @@ function nextTurn() {
 function doubt() {
     doc.appendInfoNewline(`${currentPlayer.name}: Doubt!`);
     doc.setPlayerStatus(currentPlayer, Status.DOUBT);
-    doc.reveal(currentClaim().diceVal);
     for (const p of players) {
         doc.updatePlayerSection(p);
     }
     doc.updatePlayerSection(prevPlayer());
+    doc.reveal(currentClaim().diceVal);
     setTimeout(() => {
         const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
         if (tot < currentClaim().count) {
@@ -81,13 +81,14 @@ function doubt() {
 
 function subtractLife(p: Player, diff: number) {
     doc.setPlayerStatus(p, Status.OOPS);
-    doc.appendInfoNewline(loseLifeMsg(p, diff));
     if (lossModeDice) {
         if (diff == 0) diff = 1;
+        doc.appendInfoNewline(loseLifeMsg(p, Math.min(diff, p.lives)));
         p.lives -= diff;
         if (p.lives < 0) p.lives = 0;
     } else {
         p.lives -= 1;
+        doc.appendInfoNewline(loseLifeMsg(p, 1));
     }
     doc.drawLives(p);
     if (p.lives == 0) {
@@ -113,7 +114,7 @@ function playerTurn() {
 }
 
 function startNewRound() {
-    // doc.hide();
+    doc.hide();
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
         doc.clearInfo();
@@ -247,10 +248,9 @@ function loseLifeMsg(loser: Player, num: number) {
     if (lossModeDice) {
         if (loser.id == 0) return `You lose ${num} dice!`;
         else return `${loser.name} loses ${num} dice!`;
-    } else {
-        if (loser.id == 0) return `You lose a life!`;
-            else return `${loser.name} loses a life!`;
-    }
+    } 
+    if (loser.id == 0) return `You lose a life!`;
+    else return `${loser.name} loses a life!`;
 }
 
 function claimMsg(p: Player) {

@@ -370,10 +370,6 @@ body.dark-mode {
     margin: 0 5px;
 }
 
-.highlighted-dice {
-    border: 2px solid red;
-}
-
 .npc-container .player-die-img-container {
     display: flex;
     justify-content: center;
@@ -384,21 +380,26 @@ body.dark-mode {
     gap: 10px;
 }
 
-.npc-container .player-die-img-container.revealed {
+.npc-container[revealed="true"] .player-die-img-container {
     background-image: none;
     opacity: 1;
 }
 
-.npc-container .player-die-img-container:not(.revealed) {
+.npc-container[revealed="false"] .player-die-img-container {
     background-image: url("img/quma.png");
 }
 
-.npc-container .player-die-img-container.revealed img {
+.npc-container[revealed="true"] .player-die-img-container img {
     opacity: 1;
     transition: opacity 0.5s ease-in-out;
 }
-.npc-container .player-die-img-container:not(.revealed) img{
+
+.npc-container[revealed="false"] .player-die-img-container img {
     opacity: 0;
+}
+
+body[revealed="true"] .player-die-img-container .highlighted-dice {
+    border: 2px solid red;
 }
 
 .dice-container.dead .player-die-img-container {
