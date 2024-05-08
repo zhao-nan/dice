@@ -4,6 +4,10 @@ export function roll5dice() {
     return Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1);
 }
 
+export function rollNdice(n: number) {
+    return Array.from({length: n}, () => Math.floor(Math.random() * 6) + 1);
+}
+
 export function isGreater(thisClaim: Claim, other: Claim) {
     return thisClaim.count > other.count || (thisClaim.count == other.count && thisClaim.diceVal > other.diceVal);
 }

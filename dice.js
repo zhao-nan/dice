@@ -10,6 +10,7 @@ let npcTimeout = 500;
 let doubtTimeout = 500;
 let newRoundTimeout = 500;
 let DeathTimeout = 500;
+let lossModeDice = false;
 function letsGo() {
     doc.addDarkListener();
     doc.createRulesSection();
@@ -53,7 +54,7 @@ function doubt() {
             doc.setPlayerStatus(currentPlayer, Status.HEH);
             let pp = prevPlayer();
             doc.appendInfoNewline(justifiedCallMsg(pp, tot));
-            subtractLife(pp);
+            subtractLife(pp, currentClaim().count - tot);
             currentPlayer = prevPlayer();
             setTimeout(() => {
                 doc.setPlayerStatus(nextPlayer(), Status.WAITING);
@@ -64,7 +65,7 @@ function doubt() {
             // Doubt unjustified
             doc.appendInfoNewline(noDoubtMsg(tot));
             doc.setPlayerStatus(prevPlayer(), Status.HEH);
-            subtractLife(currentPlayer);
+            subtractLife(currentPlayer, tot - currentClaim().count);
             setTimeout(() => {
                 doc.setPlayerStatus(prevPlayer(), Status.WAITING);
                 startNewRound(currentPlayer);
@@ -73,10 +74,19 @@ function doubt() {
         currentNumPlayers = players.filter(p => p.lives > 0).length;
     }, newRoundTimeout);
 }
-function subtractLife(p) {
+function subtractLife(p, diff) {
     doc.setPlayerStatus(p, Status.OOPS);
-    doc.appendInfoNewline(loseLifeMsg(p));
-    p.lives -= 1;
+    doc.appendInfoNewline(loseLifeMsg(p, diff));
+    if (lossModeDice) {
+        if (diff == 0)
+            diff = 1;
+        p.lives -= diff;
+        if (p.lives < 0)
+            p.lives = 0;
+    }
+    else {
+        p.lives -= 1;
+    }
     doc.drawLives(p);
     if (p.lives == 0) {
         setTimeout(() => {
@@ -109,10 +119,13 @@ function startNewRound(player) {
     else {
         players.forEach((p) => {
             if (p.lives > 0) {
-                p.dice = util.roll5dice();
+                if (lossModeDice)
+                    p.dice = util.rollNdice(p.lives);
+                else
+                    p.dice = util.roll5dice();
             }
             else {
-                p.dice = [0, 0, 0, 0, 0];
+                p.dice = [];
             }
             doc.updatePlayerSection(p);
         });
@@ -138,9 +151,13 @@ export function startGame() {
     doubtTimeout = gameSpeed * 1000;
     DeathTimeout = gameSpeed * 1000;
     newRoundTimeout = gameSpeed * 1500;
+    const lossModeThing = document.querySelector('input[name="loss-mode"]:checked');
+    console.log(lossModeThing.value);
+    lossModeDice = lossModeThing.value == 'Dice';
+    let numLives = lossModeDice ? 5 : 3;
     players = [];
     for (let i = 0; i < currentNumPlayers; i++) {
-        players.push({ name: names[7 - i], id: i, lives: 3, claim: { count: 0, diceVal: 0 }, dice: [] });
+        players.push({ name: names[7 - i], id: i, lives: numLives, claim: { count: 0, diceVal: 0 }, dice: [] });
     }
     doc.activateMainSection();
     currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)];
@@ -204,11 +221,19 @@ function winnerMsg(winner) {
     else
         return `${winner.name} wins!`;
 }
-function loseLifeMsg(loser) {
-    if (loser.id == 0)
-        return `You lose a life!`;
-    else
-        return `${loser.name} loses a life!`;
+function loseLifeMsg(loser, num) {
+    if (lossModeDice) {
+        if (loser.id == 0)
+            return `You lose ${num} dice!`;
+        else
+            return `${loser.name} loses ${num} dice!`;
+    }
+    else {
+        if (loser.id == 0)
+            return `You lose a life!`;
+        else
+            return `${loser.name} loses a life!`;
+    }
 }
 function claimMsg(p) {
     if (p.id == 0)

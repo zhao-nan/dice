@@ -75,7 +75,7 @@ export function createPlayerSection(p: Player) {
     }, playerSection);
 
     const imgContainer = createElement('container', {
-        id: 'player-img-container',
+        id: 'player-img-container-' + i,
         className: 'img-container'
     }, playerSection);
 
@@ -119,19 +119,27 @@ export function createPlayerSection(p: Player) {
         id: `lives-container${i}`
     }, playerSection);
 
-    for (let j = 1; j <= 5; j++) {
+    drawDice(p);
+    
+    return playerSection;
+}
+
+function drawDice(p: Player) {
+    const diceContainer = document.getElementById(`dice-container${p.id}`);
+    diceContainer.innerHTML = '';
+    appendInfoNewline(`drawing ${p.lives} dice for ${p.name}`);
+    for (let j = 1; j <= p.lives; j++) {
         const imgContainer = createElement('img-container', {
-            id: util.playerDieImgId(i, j) + '-container',
+            id: util.playerDieImgId(p.id, j) + '-container',
             className: 'player-die-img-container',
-        }, document.getElementById(`dice-container${i}`));
+        }, diceContainer);
 
         createElement('img', {
-            id: util.playerDieImgId(i, j),
+            id: util.playerDieImgId(p.id, j),
             className: 'player-die-img',
+            src: util.getDiceImgSrc(p.dice[j-1]),
         }, imgContainer);
     }
-
-    return playerSection;
 }
 
 export function drawLives(player: Player) {
@@ -148,14 +156,7 @@ export function updatePlayerSection(p: Player) {
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
     }
 
-    for (let i = 1; i <= 5; i++) {
-        const resultImg = document.getElementById(util.playerDieImgId(p.id, i)) as HTMLImageElement;
-        if (p.lives <= 0) {
-            resultImg.style.display = 'none';
-        } else {
-            resultImg.src = util.getDiceImgSrc(p.dice[i-1]);
-        }
-    }
+    drawDice(p);
 
     drawLives(p);
 }
@@ -216,7 +217,9 @@ export function createGameChoices(startGame: () => void) {
     const optionsPanel = createElement('div', { id: 'options-panel' }, document.body);
     createNumPlayerChoice(optionsPanel);
 
-    createGameSpeedChoice(optionsPanel);    
+    createGameSpeedChoice(optionsPanel);   
+    
+    createLossModeChoice(optionsPanel);
 
     const startButton = createElement('button', {
         id: 'setup-game',
@@ -268,6 +271,28 @@ function createGameSpeedChoice(optionsPanel: HTMLDivElement) {
         label.setAttribute('for', 'game-speed' + speeds[i]);
         gameSpeedForm.appendChild(radio);
         gameSpeedForm.appendChild(label);
+    }
+}
+
+function createLossModeChoice(optionsPanel: HTMLDivElement) {
+    const lossModeForm = createElement('div',
+        { id: 'loss-mode-form', textContent: 'Loss mode:'  }, 
+        optionsPanel);
+
+    const lossModes = ['Lives', 'Dice'];
+    for (let i = 0; i < lossModes.length; i++) {
+        const radio = createElement('input', {
+            type: 'radio',
+            value: lossModes[i],
+            name: 'loss-mode',
+            id: 'loss-mode' + lossModes[i],
+            checked: i === 0,
+        }, lossModeForm);
+
+        const label = createElement('label', { textContent: lossModes[i] }, lossModeForm);
+        label.setAttribute('for', 'loss-mode' + lossModes[i]);
+        lossModeForm.appendChild(radio);
+        lossModeForm.appendChild(label);
     }
 }
 
