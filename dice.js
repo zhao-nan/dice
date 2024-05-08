@@ -58,7 +58,7 @@ function doubt() {
             currentPlayer = prevPlayer();
             setTimeout(() => {
                 doc.setPlayerStatus(nextPlayer(), Status.WAITING);
-                startNewRound(prevPlayer());
+                startNewRound();
             }, doubtTimeout);
         }
         else {
@@ -68,7 +68,7 @@ function doubt() {
             subtractLife(currentPlayer, tot - currentClaim().count);
             setTimeout(() => {
                 doc.setPlayerStatus(prevPlayer(), Status.WAITING);
-                startNewRound(currentPlayer);
+                startNewRound();
             }, doubtTimeout);
         }
         currentNumPlayers = players.filter(p => p.lives > 0).length;
@@ -107,8 +107,8 @@ function playerTurn() {
     doc.appendInfoNewline(`Your turn..  `);
     doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
 }
-function startNewRound(player) {
-    doc.hide();
+function startNewRound() {
+    // doc.hide();
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
         doc.clearInfo();
@@ -119,10 +119,12 @@ function startNewRound(player) {
     else {
         players.forEach((p) => {
             if (p.lives > 0) {
-                if (lossModeDice)
+                if (lossModeDice) {
                     p.dice = util.rollNdice(p.lives);
-                else
+                }
+                else {
                     p.dice = util.roll5dice();
+                }
             }
             else {
                 p.dice = [];
@@ -165,7 +167,7 @@ export function startGame() {
     doc.createPlayerTurnSection(doubt, claim, currentClaim());
     doc.hide();
     players.forEach((p) => { doc.updatePlayerSection(p); });
-    startNewRound(currentPlayer);
+    startNewRound();
 }
 ;
 function createPlayerSections() {

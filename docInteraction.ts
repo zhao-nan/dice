@@ -127,8 +127,7 @@ export function createPlayerSection(p: Player) {
 function drawDice(p: Player) {
     const diceContainer = document.getElementById(`dice-container${p.id}`);
     diceContainer.innerHTML = '';
-    appendInfoNewline(`drawing ${p.lives} dice for ${p.name}`);
-    for (let j = 1; j <= p.lives; j++) {
+    for (let j = 1; j <= p.dice.length; j++) {
         const imgContainer = createElement('img-container', {
             id: util.playerDieImgId(p.id, j) + '-container',
             className: 'player-die-img-container',
@@ -163,10 +162,13 @@ export function updatePlayerSection(p: Player) {
 
 export function reveal(num: number) {
     const diceImgs: NodeListOf<HTMLImageElement> = document.querySelectorAll('.player-die-img-container');
+    appendInfoNewline("found dice imgs: " + diceImgs.length)
     diceImgs.forEach((cont) => {
         cont.classList.add('revealed');
         const img = cont.querySelector('img');
+        appendInfoNewline("found img: " + img.src);
         if (img.src.includes('dice1') || img.src.includes('dice'+num.toString())) {
+            appendInfoNewline("highlighting img: " + img.src);
             img.classList.add('highlighted-dice');
         }
     });

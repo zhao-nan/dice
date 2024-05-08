@@ -63,7 +63,7 @@ function doubt() {
             currentPlayer = prevPlayer();
             setTimeout(() => {
                 doc.setPlayerStatus(nextPlayer(), Status.WAITING);
-                startNewRound(prevPlayer())
+                startNewRound()
             }, doubtTimeout);
         } else {
             // Doubt unjustified
@@ -72,7 +72,7 @@ function doubt() {
             subtractLife(currentPlayer, tot - currentClaim().count);
             setTimeout(() => {
                 doc.setPlayerStatus(prevPlayer(), Status.WAITING);
-                startNewRound(currentPlayer)
+                startNewRound()
             }, doubtTimeout);
         }
         currentNumPlayers = players.filter(p => p.lives > 0).length;
@@ -112,8 +112,8 @@ function playerTurn() {
     doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
 }
 
-function startNewRound(player: Player) {
-    doc.hide();
+function startNewRound() {
+    // doc.hide();
     if (players.filter(p => p.lives > 0).length == 1) {
         const winner = players.find(p => p.lives > 0);
         doc.clearInfo();
@@ -123,8 +123,11 @@ function startNewRound(player: Player) {
     } else {
         players.forEach((p) => {
             if (p.lives > 0) {
-                if (lossModeDice) p.dice = util.rollNdice(p.lives);
-                else p.dice = util.roll5dice();
+                if (lossModeDice) {
+                    p.dice = util.rollNdice(p.lives);
+                } else {
+                    p.dice = util.roll5dice();
+                }
             } else {
                 p.dice = [];
             }
@@ -177,7 +180,7 @@ export function startGame() {
     doc.hide();
     players.forEach((p) => {doc.updatePlayerSection(p)});
 
-    startNewRound(currentPlayer);
+    startNewRound();
 };
 
 function createPlayerSections() {
