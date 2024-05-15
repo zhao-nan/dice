@@ -222,11 +222,11 @@ function diceVals() {
 }
 
 function justifiedCallMsg(pp: Player, tot: number) {
-    return `Justified! Actual number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`
+    return `Justified! Actually only ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`
 }
 
 function noDoubtMsg(tot: number) {
-    return `${goodBidMsg(prevPlayer())} number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`
+    return `${goodBidMsg(prevPlayer())}: Actually ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`
 }
 
 function goodBidMsg(p: Player) {

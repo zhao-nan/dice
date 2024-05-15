@@ -241,7 +241,7 @@ function createNumPlayerChoice(optionsPanel: HTMLDivElement) {
             value: i.toString(),
             name: 'num-players',
             id: 'num-players' + i,
-            checked: i === 5,
+            checked: i === 8,
         }, numPlayersForm);
 
         const label = createElement('label', { textContent: `${i}`}, radio);
@@ -264,7 +264,7 @@ function createGameSpeedChoice(optionsPanel: HTMLDivElement) {
             value: i+1,
             name: 'game-speed',
             id: 'game-speed' + speeds[i],
-            checked: i === 1,
+            checked: i === 0,
         }, gameSpeedForm);
 
         const label = createElement('label', { textContent: speeds[i] }, gameSpeedForm);
@@ -286,7 +286,7 @@ function createLossModeChoice(optionsPanel: HTMLDivElement) {
             value: lossModes[i],
             name: 'loss-mode',
             id: 'loss-mode' + lossModes[i],
-            checked: i === 0,
+            checked: i === 1,
         }, lossModeForm);
 
         const label = createElement('label', { textContent: lossModes[i] }, lossModeForm);

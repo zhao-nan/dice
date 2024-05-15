@@ -202,10 +202,10 @@ function diceVals() {
     return diceVals;
 }
 function justifiedCallMsg(pp, tot) {
-    return `Justified! Actual number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`;
+    return `Justified! Actually only ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`;
 }
 function noDoubtMsg(tot) {
-    return `${goodBidMsg(prevPlayer())} number of ${util.getDiceSymbol(currentClaim().diceVal)}: ${tot}`;
+    return `${goodBidMsg(prevPlayer())}: Actually ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`;
 }
 function goodBidMsg(p) {
     if (p.id == 0)
