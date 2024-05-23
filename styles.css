@@ -234,8 +234,14 @@ body.dark-mode {
 }
 
 #player-container .player-section .dice-container {
-    width: 270px;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     height: 44px;
+    width: 250px;
+    gap: 10px;
 }
 
 #player-container .player-section .dice-container img {
@@ -365,7 +371,6 @@ body.dark-mode {
 .dice-container img {
     width: 30px;
     height: 30px;
-    margin: 0 5px;
 }
 
 .npc-container .player-die-img-container {
@@ -394,6 +399,10 @@ body.dark-mode {
 
 .npc-container[revealed="false"] .player-die-img-container img {
     opacity: 0;
+}
+
+.player-die-img {
+    border: 2px solid transparent;
 }
 
 body[revealed="true"] .player-die-img-container .highlighted-dice {

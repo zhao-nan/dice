@@ -110,7 +110,7 @@ function claim(claim: Claim) {
 
 function playerTurn() {
     doc.appendInfoNewline(`Your turn..  `);
-    doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
+    doc.activatePlayerTurnSection(currentClaim(), claim, totalNumDice());
 }
 
 function startNewRound() {
@@ -230,8 +230,8 @@ function noDoubtMsg(tot: number) {
 }
 
 function goodBidMsg(p: Player) {
-    if (p.id == 0) return `Your bid was correct:`;
-    return `${p.name}'s bid was correct:`;
+    if (p.id == 0) return `Your bid was correct`;
+    return `${p.name}'s bid was correct`;
 }
 
 function elimMsg(pp: Player) {
@@ -261,6 +261,10 @@ function claimMsg(p: Player) {
 function startRoundMsg(p: Player) {
     if (p.id == 0) return `You start the round.`;
     return `${p.name} starts the round.`;
+}
+
+function totalNumDice() {
+    return players.map(p => p.dice).flat().length;
 }
 
 function getNumOtherDice(p: Player) {

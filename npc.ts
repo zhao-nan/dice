@@ -11,13 +11,15 @@ export function npcClaim(currentClaim: Claim, ownDice: number[], numOtherDice: n
     }
 
     let freqs = getFreqs(ownDice);
-    let fav = freqs.indexOf(Math.max(...freqs));
-    let val = freqs[fav];
+    let maxFreq = Math.max(...freqs);
+    let favs = freqs.reduce((indices, freq, index) => freq === maxFreq ? [...indices, index] : indices, []);
+    let fav = favs[Math.floor(Math.random() * favs.length)];
+    let numOfFav = freqs[fav];
 
     let stillEarly = currentClaim.count <= numOtherDice / 5;
 
     let bluff = bluffClaim(fav, freqs, numOtherDice);
-    let safe = safeClaim(currentClaim, numOtherDice, fav, val);
+    let safe = safeClaim(currentClaim, numOtherDice, fav, numOfFav);
 
     if (stillEarly && rand > 0.5 && util.isGreater(bluff, currentClaim)) {
         return bluff;

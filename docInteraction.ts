@@ -50,7 +50,6 @@ export function appendInfo(text: string) {
     const infoSection = document.getElementById('info-section');
     infoSection.innerHTML += text;
     infoSection.scrollTop = infoSection.scrollHeight;
-    console.log(text);
 }
 
 export function clearInfo() {
@@ -312,7 +311,6 @@ export function activateNewGameButton() {
 }
 
 function restartGame() {
-    console.log('Restarting game...');
     document.getElementById('player-container').innerHTML = '';
     document.getElementById('player-turn-section').innerHTML = '';
     document.getElementById('npc-container').innerHTML = '';
@@ -488,12 +486,14 @@ export function addEvListeners() {
             const doubtButton = document.getElementById('doubt-section').querySelector('button');
             if (!doubtButton.disabled) {
                 doubtButton.click();
+                deactivatePlayerTurnSection();
             }
         }
         if (event.key === 'Enter') {
             const claimButton = document.getElementById('claim-button') as HTMLButtonElement;
             if (claimButton && !claimButton.disabled) {
                 claimButton.click();
+                deactivatePlayerTurnSection();
             }
         }
         if (event.key === 'ArrowUp') {

@@ -106,7 +106,7 @@ function claim(claim) {
 }
 function playerTurn() {
     doc.appendInfoNewline(`Your turn..  `);
-    doc.activatePlayerTurnSection(currentClaim(), claim, currentNumPlayers * 5);
+    doc.activatePlayerTurnSection(currentClaim(), claim, totalNumDice());
 }
 function startNewRound() {
     doc.hide();
@@ -209,8 +209,8 @@ function noDoubtMsg(tot) {
 }
 function goodBidMsg(p) {
     if (p.id == 0)
-        return `Your bid was correct:`;
-    return `${p.name}'s bid was correct:`;
+        return `Your bid was correct`;
+    return `${p.name}'s bid was correct`;
 }
 function elimMsg(pp) {
     if (pp.id == 0)
@@ -245,6 +245,9 @@ function startRoundMsg(p) {
     if (p.id == 0)
         return `You start the round.`;
     return `${p.name} starts the round.`;
+}
+function totalNumDice() {
+    return players.map(p => p.dice).flat().length;
 }
 function getNumOtherDice(p) {
     return players.filter(pl => pl.id != p.id && pl.lives > 0).map(pl => pl.dice).flat().length;
