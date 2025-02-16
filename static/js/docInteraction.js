@@ -1,6 +1,6 @@
 import * as util from './util.js';
 import { Status } from './types.js';
-import { startGame } from './dice.js';
+import { startGame, getPlayerIdxByPlayer } from './dice.js';
 let listenersAlreadyAdded = false;
 export function addDarkListener() {
     const darkToggle = document.getElementById('darkModeToggle');
@@ -45,9 +45,9 @@ export function appendInfo(text) {
 export function clearInfo() {
     document.getElementById('info-section').innerHTML = '';
 }
-export function createPlayerSection(p) {
-    let i = p.id;
-    const container = i === 0 ?
+export function createPlayerSection(p, isMe) {
+    let i = getPlayerIdxByPlayer(p);
+    const container = isMe ?
         document.getElementById('player-container') :
         document.getElementById('npc-container');
     const playerSection = createElement('section', {
@@ -71,6 +71,7 @@ export function createPlayerSection(p) {
     const playerActivity = createElement('span', {
         className: 'player-activity',
         id: `player-activity${i}`,
+        status: 'waiting'
     }, playerSection);
     createElement('label', {
         textContent: 'Waiting',
@@ -99,28 +100,29 @@ export function createPlayerSection(p) {
     return playerSection;
 }
 function drawDice(p) {
-    const diceContainer = document.getElementById(`dice-container${p.id}`);
+    const diceContainer = document.getElementById(`dice-container${getPlayerIdxByPlayer(p)}`);
     diceContainer.innerHTML = '';
     for (let j = 1; j <= p.dice.length; j++) {
         const imgContainer = createElement('img-container', {
-            id: util.playerDieImgId(p.id, j) + '-container',
+            id: util.playerDieImgId(getPlayerIdxByPlayer(p), j) + '-container',
             className: 'player-die-img-container',
         }, diceContainer);
         createElement('img', {
-            id: util.playerDieImgId(p.id, j),
+            id: util.playerDieImgId(getPlayerIdxByPlayer(p), j),
             className: 'player-die-img',
             src: util.getDiceImgSrc(p.dice[j - 1]),
         }, imgContainer);
     }
 }
 export function drawLives(player) {
-    const livesContainer = document.getElementById('lives-container' + player.id);
+    const playerIdx = getPlayerIdxByPlayer(player);
+    const livesContainer = document.getElementById('lives-container' + playerIdx);
     livesContainer.innerHTML = '';
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
 export function updatePlayerSection(p) {
-    const playerClaimVal = document.getElementById('player-claim-val' + p.id);
-    const playerClaimDie = document.getElementById('player-claim-die' + p.id);
+    const playerClaimVal = document.getElementById('player-claim-val' + getPlayerIdxByPlayer(p));
+    const playerClaimDie = document.getElementById('player-claim-die' + getPlayerIdxByPlayer(p));
     if (p.claim.count > 0) {
         playerClaimVal.textContent = p.claim.count.toString();
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
@@ -260,9 +262,11 @@ function restartGame() {
     createGameChoices(startGame);
 }
 export function setPlayerStatus(player, status) {
-    const activity = document.getElementById('player-activity' + player.id);
+    const playerId = getPlayerIdxByPlayer(player);
+    status = player.status;
+    const activity = document.getElementById('player-activity' + playerId);
     activity.setAttribute('status', status.toLowerCase().replace('!', ''));
-    const statusLabel = document.getElementById('player-status' + player.id);
+    const statusLabel = document.getElementById('player-status' + playerId);
     let txt;
     switch (status) {
         case Status.WAITING:
@@ -285,7 +289,7 @@ export function setPlayerStatus(player, status) {
             break;
         case Status.DEAD:
             txt = "🪦";
-            document.getElementById('dice-container' + player.id).classList.add('dead');
+            document.getElementById('dice-container' + playerId).classList.add('dead');
             break;
         case Status.WINNER:
             txt = "🎉✌️🥳";

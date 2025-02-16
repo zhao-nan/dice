@@ -1,6 +1,6 @@
 import * as util from './util.js';
 import { Claim, Player, Status } from './types.js';
-import { startGame } from './dice.js';
+import { startGame, getPlayerIdxByPlayer } from './dice.js';
 
 let listenersAlreadyAdded: boolean = false;
 
@@ -56,9 +56,9 @@ export function clearInfo() {
     document.getElementById('info-section').innerHTML = '';
 }
 
-export function createPlayerSection(p: Player) {
-    let i = p.id;
-    const container = i === 0 ?
+export function createPlayerSection(p: Player, isMe: boolean) {
+    let i = getPlayerIdxByPlayer(p);
+    const container = isMe ?
      document.getElementById('player-container') :
      document.getElementById('npc-container');
 
@@ -87,6 +87,7 @@ export function createPlayerSection(p: Player) {
     const playerActivity = createElement('span', {
         className: 'player-activity',
         id: `player-activity${i}`,
+        status: 'waiting'
     }, playerSection);
 
     createElement('label', {
@@ -124,16 +125,16 @@ export function createPlayerSection(p: Player) {
 }
 
 function drawDice(p: Player) {
-    const diceContainer = document.getElementById(`dice-container${p.id}`);
+    const diceContainer = document.getElementById(`dice-container${getPlayerIdxByPlayer(p)}`) as HTMLDivElement;
     diceContainer.innerHTML = '';
     for (let j = 1; j <= p.dice.length; j++) {
         const imgContainer = createElement('img-container', {
-            id: util.playerDieImgId(p.id, j) + '-container',
+            id: util.playerDieImgId(getPlayerIdxByPlayer(p), j) + '-container',
             className: 'player-die-img-container',
         }, diceContainer);
 
         createElement('img', {
-            id: util.playerDieImgId(p.id, j),
+            id: util.playerDieImgId(getPlayerIdxByPlayer(p), j),
             className: 'player-die-img',
             src: util.getDiceImgSrc(p.dice[j-1]),
         }, imgContainer);
@@ -141,14 +142,15 @@ function drawDice(p: Player) {
 }
 
 export function drawLives(player: Player) {
-    const livesContainer = document.getElementById('lives-container' + player.id) as HTMLDivElement;
+    const playerIdx = getPlayerIdxByPlayer(player);
+    const livesContainer = document.getElementById('lives-container' + playerIdx) as HTMLDivElement;
     livesContainer.innerHTML = '';
     livesContainer.textContent = '❤️ '.repeat(player.lives);
 }
 
 export function updatePlayerSection(p: Player) {
-    const playerClaimVal = document.getElementById('player-claim-val' + p.id) as HTMLSpanElement;
-    const playerClaimDie = document.getElementById('player-claim-die' + p.id) as HTMLImageElement;
+    const playerClaimVal = document.getElementById('player-claim-val' + getPlayerIdxByPlayer(p)) as HTMLSpanElement;
+    const playerClaimDie = document.getElementById('player-claim-die' + getPlayerIdxByPlayer(p)) as HTMLImageElement;
     if (p.claim.count > 0) {
         playerClaimVal.textContent = p.claim.count.toString();
         playerClaimDie.src = util.getDiceImgSrc(p.claim.diceVal);
@@ -319,9 +321,11 @@ function restartGame() {
 }
 
 export function setPlayerStatus(player: Player, status: Status) {
-    const activity = document.getElementById('player-activity' + player.id);
+    const playerId = getPlayerIdxByPlayer(player);
+    status = player.status;
+    const activity = document.getElementById('player-activity' + playerId);
     activity.setAttribute('status', status.toLowerCase().replace('!',''));
-    const statusLabel = document.getElementById('player-status' + player.id);
+    const statusLabel = document.getElementById('player-status' + playerId);
     let txt: string;
     switch (status)  {
         case Status.WAITING: txt = "😴"; break;
@@ -332,7 +336,7 @@ export function setPlayerStatus(player: Player, status: Status) {
         case Status.HEH: txt = getWinningEmoji(); break;
         case Status.DEAD: 
             txt = "🪦";
-            document.getElementById('dice-container' + player.id).classList.add('dead');
+            document.getElementById('dice-container' + playerId).classList.add('dead');
             break;
         case Status.WINNER: txt = "🎉✌️🥳"; break;
     };

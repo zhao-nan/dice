@@ -1,273 +1,134 @@
-import * as npc from './npc.js';
-import { Claim, Player, Status } from './types.js';
+import { io } from 'socket.io-client';
+import { Claim, Player, Status, GameState } from './types.js';
 import * as doc from './docInteraction.js';
-import * as util from './util.js';
+
+const socket = io("http://127.0.0.1:5000");
+socket.on('update_game_state', (gameState) => {updateUI(gameState);});
+socket.on('update_players', (playerString) => {
+    document.getElementById('info-section').innerText = playerString;
+    createButton('info-section', 'startGame', 'Start Game', startGame);
+});
+socket.on('game_started', (gameStateString) => {
+    const gameState : GameState = JSON.parse(gameStateString);
+    players = gameState.players;
+    currentPlayer = players[gameState.current_player.id];
+    currentNumPlayers = players.filter(p => p.lives > 0).length;
+    doc.activateMainSection();
+
+    createPlayerSections();
+    doc.createPlayerTurnSection(doubt, claim, new Claim(0, 0));
+
+    doc.hide();
+    players.forEach((p) => {doc.updatePlayerSection(p)});
+    updateUI(gameStateString);
+})
+
+function createButton(parentId, buttonId, buttonText, onClickFunction) {
+    // Get the parent element by ID
+    const parentElement = document.getElementById(parentId);
+
+    // Create a new button element
+    const button = document.createElement('button');
+
+    // Set the button's ID
+    button.id = buttonId;
+
+    // Set the button's text
+    button.innerText = buttonText;
+
+    // Set the button's click event handler
+    button.onclick = onClickFunction;
+    // Append the button to the parent element
+    parentElement.appendChild(button);
+}
+
+export function startGame() {
+    // Send start game request to server
+    // Example: socket.emit('start_game');
+    socket.emit('start_game');
+}
 
 window.onload = letsGo;
 
-let currentPlayer: Player;
-let players: Player[] = new Array();
+var currentPlayer: Player;
+var players: Player[] = new Array();
 let currentNumPlayers: number;
-let npcTimeout: number = 500;
-let doubtTimeout: number = 500;
-let newRoundTimeout: number = 500;
-let DeathTimeout: number = 500;
 let lossModeDice: boolean = false;
 
 function letsGo() {
     doc.addDarkListener();
-    doc.createRulesSection();
+    //doc.createRulesSection();
     doc.createGameChoices(startGame);
+    document.getElementById('info-section').innerText = 'Waiting for players...';
 }
 
-function npcTurn() {
-    doc.deactivatePlayerTurnSection();
-    setTimeout(() => {
-        let c: Claim = npc.npcClaim(currentClaim(), currentPlayer.dice, getNumOtherDice(currentPlayer));
-        if (c.diceVal == 0 && c.count == 0) {
-            doubt();
-        } else {
-            claim(c);
-        }
-    }, npcTimeout);
-}
 
-function nextTurn() {
-    doc.setPlayerStatus(prevPlayer(), Status.WAITING);
-    currentPlayer = nextPlayer();
-    doc.setPlayerStatus(currentPlayer, Status.THINKING);
 
-    if (currentPlayer.id == 0) {
-        playerTurn();
-    } else {
-        npcTurn();
-    }
-}
+function updateUI(gameStateString: string) {
+    const gameState : GameState = JSON.parse(gameStateString);
+    console.log(gameState);
+    players = gameState.players;
+    currentPlayer = players[gameState.current_player_id];
+    currentNumPlayers = players.filter(p => p.lives > 0).length;
+    console.log(currentPlayer);
 
-function doubt() {
-    doc.appendInfoNewline(`${currentPlayer.name}: Doubt!`);
-    doc.setPlayerStatus(currentPlayer, Status.DOUBT);
-    for (const p of players) {
+    players.forEach((p) => {
         doc.updatePlayerSection(p);
-    }
-    doc.updatePlayerSection(prevPlayer());
-    doc.reveal(currentClaim().diceVal);
-    setTimeout(() => {
-        const tot = util.totalNumDiceOf(currentClaim().diceVal, diceVals());
-        if (tot < currentClaim().count) {
-            // Doubt justified
-            doc.setPlayerStatus(currentPlayer, Status.HEH);
-            let pp = prevPlayer();
-            doc.appendInfoNewline(justifiedCallMsg(pp, tot));
-            subtractLife(pp, currentClaim().count - tot);
-            currentPlayer = prevPlayer();
-            setTimeout(() => {
-                doc.setPlayerStatus(nextPlayer(), Status.WAITING);
-                startNewRound()
-            }, doubtTimeout);
-        } else {
-            // Doubt unjustified
-            doc.appendInfoNewline(noDoubtMsg(tot));
-            doc.setPlayerStatus(prevPlayer(), Status.HEH);
-            subtractLife(currentPlayer, tot - currentClaim().count);
-            setTimeout(() => {
-                doc.setPlayerStatus(prevPlayer(), Status.WAITING);
-                startNewRound()
-            }, doubtTimeout);
-        }
-        currentNumPlayers = players.filter(p => p.lives > 0).length;
-    }, newRoundTimeout);
-}
+        doc.setPlayerStatus(p, p.status);
+    });
 
-function subtractLife(p: Player, diff: number) {
-    doc.setPlayerStatus(p, Status.OOPS);
-    if (lossModeDice) {
-        if (diff == 0) diff = 1;
-        doc.appendInfoNewline(loseLifeMsg(p, Math.min(diff, p.lives)));
-        p.lives -= diff;
-        if (p.lives < 0) p.lives = 0;
+    doc.appendInfoNewline(startRoundMsg(currentPlayer));
+    if (currentPlayer.id == socket.id) {
+        doc.appendInfoNewline('Waiting for your turn...');
+        doc.activatePlayerTurnSection(currentPlayer.claim, claim, numActiveDice());
     } else {
-        p.lives -= 1;
-        doc.appendInfoNewline(loseLifeMsg(p, 1));
-    }
-    doc.drawLives(p);
-    if (p.lives == 0) {
-        setTimeout(() => {
-            doc.appendInfoNewline(elimMsg(p));
-            doc.setPlayerStatus(p, Status.DEAD);
-        }, DeathTimeout);
+        doc.deactivatePlayerTurnSection();
     }
 }
 
 function claim(claim: Claim) {
-    currentPlayer.claim = claim;
-    doc.appendInfoNewline(claimMsg(currentPlayer));
-    doc.setPlayerStatus(currentPlayer, Status.CLAIM);
-    doc.updatePlayerSection(prevPlayer());
-    doc.updatePlayerSection(currentPlayer);
-    nextTurn();
+    // Send claim to server
+    socket.emit('claim', JSON.stringify(claim));
 }
 
-function playerTurn() {
-    doc.appendInfoNewline(`Your turn..  `);
-    doc.activatePlayerTurnSection(currentClaim(), claim, totalNumDice());
-}
-
-function startNewRound() {
-    doc.hide();
-    if (players.filter(p => p.lives > 0).length == 1) {
-        const winner = players.find(p => p.lives > 0);
-        doc.clearInfo();
-        doc.appendInfo(winnerMsg(winner));
-        doc.setPlayerStatus(winner, Status.WINNER);
-        doc.activateNewGameButton();
-    } else {
-        players.forEach((p) => {
-            if (p.lives > 0) {
-                if (lossModeDice) {
-                    p.dice = util.rollNdice(p.lives);
-                } else {
-                    p.dice = util.roll5dice();
-                }
-            } else {
-                p.dice = [];
-            }
-            doc.updatePlayerSection(p);
-        });
-        resetClaims();
-        currentPlayer = prevPlayer();
-        doc.appendInfoNewline(startRoundMsg(nextPlayer()));
-        nextTurn();
-    }
-}
-
-export function startGame() {
-    doc.appendInfoNewline('Starting game...');
-
-    let names = ['Stag', 'Fishy', 'Meow', 'Runner', 'Butterfly', 'Tank', 'Klaus']
-
-    // permute the names
-    for (let i = names.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [names[i], names[j]] = [names[j], names[i]];
-    }
-    names.push('You');
-
-    const rButts = Array.from(document.getElementsByName('num-players')) as HTMLInputElement[];
-    currentNumPlayers = Number(rButts.find(r => r.checked).value);
-
-    const gameSpeed = Number((document.querySelector('input[name="game-speed"]:checked') as HTMLInputElement).value);
-    npcTimeout = gameSpeed * 500;
-    doubtTimeout = gameSpeed * 1000;
-    DeathTimeout = gameSpeed * 1000;
-    newRoundTimeout = gameSpeed * 1500;
-
-    const lossModeThing = (document.querySelector('input[name="loss-mode"]:checked') as HTMLInputElement);
-    console.log(lossModeThing.value);
-    lossModeDice = lossModeThing.value == 'Dice';
-    let numLives = lossModeDice ? 5 : 3;
-
-    players = [];
-    for (let i = 0; i < currentNumPlayers; i++) {
-        players.push({name: names[7-i], id: i, lives: numLives, claim: {count: 0, diceVal: 0}, dice: []});
-    }
-
-    doc.activateMainSection();
-
-    currentPlayer = players[Math.floor(Math.random() * currentNumPlayers)]
-    createPlayerSections();
-    doc.createPlayerTurnSection(doubt, claim, currentClaim());
-
-    doc.hide();
-    players.forEach((p) => {doc.updatePlayerSection(p)});
-
-    startNewRound();
-};
-
-function createPlayerSections() {
-    players.forEach((p) => {
-        doc.createPlayerSection(p);
-        doc.setPlayerStatus(p, Status.WAITING);
-    });
-}
-
-function resetClaims() {
-    players.forEach(p => p.claim = {count: 0, diceVal: 0});
-}
-
-function currentClaim() {
-    return prevPlayer().claim;
-}
-
-function nextPlayer() {
-    let curId = (currentPlayer.id + 1) % players.length;
-    while (players[curId].lives <= 0) {
-        curId = (curId + 1) % players.length;
-    }
-    return players[curId];
-}
-
-function prevPlayer() {
-    let curId = (currentPlayer.id + players.length - 1) % players.length;
-    
-    while (players[curId].lives <= 0) {
-        curId = (curId + players.length - 1) % players.length;
-    }
-    return players[curId];
-}
-
-function diceVals() {
-    let diceVals = Array.from({length: players.length}, (_, i) => players[i].dice);
-    return diceVals;
-}
-
-function justifiedCallMsg(pp: Player, tot: number) {
-    return `Justified! Actually only ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`
-}
-
-function noDoubtMsg(tot: number) {
-    return `${goodBidMsg(prevPlayer())}: Actually ${tot} ${util.getDiceSymbol(currentClaim().diceVal)}`
-}
-
-function goodBidMsg(p: Player) {
-    if (p.id == 0) return `Your bid was correct`;
-    return `${p.name}'s bid was correct`;
-}
-
-function elimMsg(pp: Player) {
-    if (pp.id == 0) return `You have been eliminated!`;
-        else return `${pp.name} has been eliminated!`;
-}
-
-function winnerMsg(winner: Player) {
-    if (winner.id == 0) return `You win!`;
-        else return `${winner.name} wins!`;
-}
-
-function loseLifeMsg(loser: Player, num: number) {
-    if (lossModeDice) {
-        if (loser.id == 0) return `You lose ${num} dice!`;
-        else return `${loser.name} loses ${num} dice!`;
-    } 
-    if (loser.id == 0) return `You lose a life!`;
-    else return `${loser.name} loses a life!`;
-}
-
-function claimMsg(p: Player) {
-    if (p.id == 0) return `You claim ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
-    return `${p.name} claims ${p.claim.count} ${util.getDiceSymbol(p.claim.diceVal)}`;
+function doubt() {
+    // Send doubt to server
+    socket.emit('doubt');
 }
 
 function startRoundMsg(p: Player) {
-    if (p.id == 0) return `You start the round.`;
+    if (p.id == socket.id) return `You start the round.`;
     return `${p.name} starts the round.`;
+}
+
+function winnerMsg(winner: Player) {
+    if (winner.id == socket.id) return `You win!`;
+    return `${winner.name} wins!`;
 }
 
 function totalNumDice() {
     return players.map(p => p.dice).flat().length;
 }
 
-function getNumOtherDice(p: Player) {
-    return players.filter(pl => pl.id != p.id && pl.lives > 0).map(pl => pl.dice).flat().length;
-} 
+function numActiveDice() {
+    return players.filter(p => p.lives > 0).map(p => p.dice).flat().length;
+}
 
+function createPlayerSections() {
+    players.forEach((p) => {
+        doc.createPlayerSection(p, p.id == socket.id);
+        doc.setPlayerStatus(p, Status.WAITING);
+    });
+}
+
+export function getPlayerIdxByPlayer(player: Player) {
+    return players.indexOf(player);
+}
+// Example socket event listeners
+// socket.on('game_state', (gameState) => {
+//     updateUI(gameState);
+// });
+
+// socket.on('player_turn', () => {
+//     playerTurn();
+// });

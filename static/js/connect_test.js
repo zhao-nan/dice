@@ -7,7 +7,7 @@ socket.on("connect", () => {
 
 // Send player movement to server
 function sendMove(data) {
-    socket.emit("player_move", data);
+    socket.emit("create_game", data);
 }
 
 // Receive updated game state from server
