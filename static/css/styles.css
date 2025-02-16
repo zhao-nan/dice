@@ -389,7 +389,7 @@ body.dark-mode {
 }
 
 .npc-container[revealed="false"] .player-die-img-container {
-    background-image: url("img/quma.png");
+    background-image: url("static/img/quma.png");
 }
 
 .npc-container[revealed="true"] .player-die-img-container img {

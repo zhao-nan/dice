@@ -4,7 +4,7 @@
 <head>
     <title>Zhao Nan's Liar's Dice</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <header>
@@ -45,6 +45,6 @@
             <section id="player-turn-section" class="player-turn-section"></section>
         </section>
     </section>
-    <script type="module" src="dice.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/dice.js') }}"></script>
 </body>
 </html>
