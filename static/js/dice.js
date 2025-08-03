@@ -19,17 +19,11 @@ socket.on('game_started', (gameStateString) => {
     updateUI(gameStateString);
 });
 function createButton(parentId, buttonId, buttonText, onClickFunction) {
-    // Get the parent element by ID
     const parentElement = document.getElementById(parentId);
-    // Create a new button element
     const button = document.createElement('button');
-    // Set the button's ID
     button.id = buttonId;
-    // Set the button's text
     button.innerText = buttonText;
-    // Set the button's click event handler
     button.onclick = onClickFunction;
-    // Append the button to the parent element
     parentElement.appendChild(button);
 }
 export function startGame() {
@@ -59,7 +53,6 @@ function updateUI(gameStateString) {
         doc.updatePlayerSection(p);
         doc.setPlayerStatus(p, p.status);
     });
-    doc.appendInfoNewline(startRoundMsg(currentPlayer));
     if (currentPlayer.id == socket.id) {
         doc.appendInfoNewline('Waiting for your turn...');
         doc.activatePlayerTurnSection(currentPlayer.claim, claim, numActiveDice());
@@ -101,11 +94,4 @@ function createPlayerSections() {
 export function getPlayerIdxByPlayer(player) {
     return players.indexOf(player);
 }
-// Example socket event listeners
-// socket.on('game_state', (gameState) => {
-//     updateUI(gameState);
-// });
-// socket.on('player_turn', () => {
-//     playerTurn();
-// });
 //# sourceMappingURL=dice.js.map

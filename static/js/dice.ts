@@ -1,6 +1,8 @@
-import { io } from 'socket.io-client';
 import { Claim, Player, Status, GameState } from './types.js';
 import * as doc from './docInteraction.js';
+
+// Socket.IO is loaded via CDN, so io is available globally
+declare const io: any;
 
 const socket = io("http://127.0.0.1:5000");
 socket.on('update_game_state', (gameState) => {updateUI(gameState);});
@@ -24,21 +26,11 @@ socket.on('game_started', (gameStateString) => {
 })
 
 function createButton(parentId, buttonId, buttonText, onClickFunction) {
-    // Get the parent element by ID
     const parentElement = document.getElementById(parentId);
-
-    // Create a new button element
     const button = document.createElement('button');
-
-    // Set the button's ID
     button.id = buttonId;
-
-    // Set the button's text
     button.innerText = buttonText;
-
-    // Set the button's click event handler
     button.onclick = onClickFunction;
-    // Append the button to the parent element
     parentElement.appendChild(button);
 }
 
@@ -62,8 +54,6 @@ function letsGo() {
     document.getElementById('info-section').innerText = 'Waiting for players...';
 }
 
-
-
 function updateUI(gameStateString: string) {
     const gameState : GameState = JSON.parse(gameStateString);
     console.log(gameState);
@@ -77,7 +67,6 @@ function updateUI(gameStateString: string) {
         doc.setPlayerStatus(p, p.status);
     });
 
-    doc.appendInfoNewline(startRoundMsg(currentPlayer));
     if (currentPlayer.id == socket.id) {
         doc.appendInfoNewline('Waiting for your turn...');
         doc.activatePlayerTurnSection(currentPlayer.claim, claim, numActiveDice());
@@ -124,11 +113,3 @@ function createPlayerSections() {
 export function getPlayerIdxByPlayer(player: Player) {
     return players.indexOf(player);
 }
-// Example socket event listeners
-// socket.on('game_state', (gameState) => {
-//     updateUI(gameState);
-// });
-
-// socket.on('player_turn', () => {
-//     playerTurn();
-// });
