@@ -3,7 +3,7 @@ import * as doc from './docInteraction.js';
 const socket = io("http://127.0.0.1:5000");
 socket.on('update_game_state', (gameState) => { updateUI(gameState); });
 socket.on('update_players', (playerString) => {
-    document.getElementById('info-section').innerText = playerString;
+    document.getElementById('info-section').innerText = "Currently in the lobby: \n" + playerString;
     createButton('info-section', 'startGame', 'Start Game', startGame);
 });
 socket.on('game_started', (gameStateString) => {
@@ -43,7 +43,7 @@ let lossModeDice = false;
 function letsGo() {
     doc.addDarkListener();
     //doc.createRulesSection();
-    doc.createGameChoices(startGame);
+    //doc.createGameChoices(startGame);
     document.getElementById('info-section').innerText = 'Waiting for players...';
 }
 function updateUI(gameStateString) {

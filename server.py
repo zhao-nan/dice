@@ -35,7 +35,10 @@ def get_players_list():
 
 @socketio.on("connect")
 def handle_connect():
-    player = Player(request.sid, "Player" + str(len(players)))
+    if len(players) >= len(Player.names):
+        logger.warning("Maximum number of players reached. Connection refused.")
+        return False
+    player = Player(request.sid, Player.names[len(players)])
     logger.debug(f"Player connected: {player}")
     players.append(player)
     playersString = get_players_list()

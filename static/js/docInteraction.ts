@@ -298,7 +298,7 @@ function createLossModeChoice(optionsPanel: HTMLDivElement) {
 }
 
 export function activateMainSection() {
-    document.getElementById('options-panel').remove();
+    //document.getElementById('options-panel').remove();
     document.getElementById('player-container').style.display = 'grid';
     document.getElementById('info-section').style.display = 'block';
 }
@@ -317,7 +317,7 @@ function restartGame() {
     document.getElementById('player-turn-section').innerHTML = '';
     document.getElementById('npc-container').innerHTML = '';
     document.getElementById('info-section').innerHTML = '';
-    createGameChoices(startGame);
+    //createGameChoices(startGame);
 }
 
 export function setPlayerStatus(player: Player, status: Status) {
