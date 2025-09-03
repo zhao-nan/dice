@@ -163,7 +163,7 @@ export function activatePlayerTurnSection(currentClaim, claim, currentNumDice) {
     interactiveElements.forEach(element => {
         element.removeAttribute('disabled');
     });
-    if (currentClaim.count == 0) {
+    if (currentClaim == null || currentClaim.count == 0) {
         const doubtButton = document.getElementById('doubt-section').querySelector('button');
         doubtButton.setAttribute('disabled', 'true');
     }

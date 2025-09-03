@@ -1,17 +1,28 @@
 
 export class GameState {
+    gameID: number;
     players: Player[];
     current_player: Player;
-    current_player_id: number;
     claiming_player: Player;
-    claiming_player_id: number;
+    statusMessages: string[];
+    revealDiceVal : number = 0; 
+    currentClaim: Claim = new Claim();
 
-    constructor(players = [], current_player = new Player('', ''), current_player_id = 0, claiming_player_id = 0) {
+    constructor(gameID : number, 
+        players = [], 
+        current_player = new Player('', ''), 
+        claiming_player = null, 
+        statusMessages = [], 
+        revealDiceVal = 0,
+    currentClaim = new Claim()) {
+
+        this.gameID = gameID;
         this.players = players;
         this.current_player = current_player;
-        this.current_player_id = current_player_id;
-        this.claiming_player = this.claiming_player;
-        this.claiming_player_id = claiming_player_id;
+        this.claiming_player = claiming_player;
+        this.statusMessages = statusMessages;
+        this.revealDiceVal = revealDiceVal;
+        this.currentClaim = currentClaim;
     }
 }
 
