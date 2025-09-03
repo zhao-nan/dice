@@ -33,6 +33,7 @@ export function startGame() {
 }
 window.onload = letsGo;
 var currentPlayer;
+var claimingPlayer;
 var players = new Array();
 let currentNumPlayers;
 let lossModeDice = false;
@@ -47,6 +48,7 @@ function updateUI(gameStateString) {
     console.log(gameState);
     players = gameState.players;
     currentPlayer = players[gameState.current_player_id];
+    claimingPlayer = players[gameState.claiming_player_id];
     currentNumPlayers = players.filter(p => p.lives > 0).length;
     console.log(currentPlayer);
     players.forEach((p) => {
@@ -55,7 +57,7 @@ function updateUI(gameStateString) {
     });
     if (currentPlayer.id == socket.id) {
         doc.appendInfoNewline('Waiting for your turn...');
-        doc.activatePlayerTurnSection(currentPlayer.claim, claim, numActiveDice());
+        doc.activatePlayerTurnSection(claimingPlayer.claim, claim, numActiveDice());
     }
     else {
         doc.deactivatePlayerTurnSection();

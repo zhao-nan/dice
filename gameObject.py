@@ -53,13 +53,19 @@ class Game:
     players = []
     currentClaim = Claim(0, 0)
     current_player = None
+    claiming_player = None
     current_player_id = 0
+    claiming_player_id = 0
     id = 0
 
-    def __init__(self, players):
+    def __init__(self, players, logger):
         self.players = players
         self.current_player = players[0]
         self.current_player_id = 0
+        self.claiming_player = players[0]
+        self.claiming_player_id = 0
+        self.logger = logger
+        self.logger.info(f"Game initialized with players: {[p.name for p in players]}")
 
     def to_dict(self):
         return {
@@ -67,68 +73,87 @@ class Game:
             'currentClaim': self.currentClaim.to_dict(),
             'current_player': self.current_player.to_dict(),
             'current_player_id': self.current_player_id,
+            'claiming_player': self.claiming_player.to_dict(),
+            'claiming_player_id': self.claiming_player_id,
             'id': self.id
         }
 
     def toJSON(self):
-        return json.dumps(self,
-                            default=lambda o: o.__dict__,
-                            sort_keys=True, indent=4)
+        return json.dumps(self.to_dict(), sort_keys=True, indent=4)
 
     def handleMove(self, data):
+        self.logger.info(f"Handling move: {data}")
         if data["action"] == "claim":
             self.current_player.claim = data["claim"]
+            self.logger.info(f"Player {self.current_player.name} made a claim: {data['claim']}")
             self.next_turn()
         elif data["action"] == "doubt":
+            self.logger.info(f"Player {self.current_player.name} called doubt")
             self.doubt()
 
     def claim(self, claim):
+        self.logger.info(f"Player {self.current_player.name} claims: {claim.to_dict()}")
         self.current_player.status = Status.CLAIM
         self.current_player.claim = claim
+        self.claiming_player = self.current_player
+        self.claiming_player_id = self.current_player_id
         self.next_turn()
 
     def next_turn(self):
+        self.logger.info(f"next turn")
+        prev_player = self.current_player
         self.current_player = self.next_player()
+        self.current_player_id = self.players.index(self.current_player)
+        self.logger.info(f"Next turn: {self.current_player.name} (previous: {prev_player.name})")
 
     def doubt(self):
-        tot = self.total_num_dice_of(self.current_player.claim.diceVal, self.diceVals())
+        self.logger.info(f"Doubt called by {self.current_player.name}")
+        tot = self.total_num_dice_of(self.claiming_player.claim.diceVal, self.diceVals())
+        self.logger.info(f"Total dice of value {self.claiming_player.claim.diceVal}: {tot}")
         if tot < self.current_claim().count:
             # Doubt justified
-            pp = self.prev_player()
+            pp = self.claiming_player
+            self.logger.info(f"Doubt justified! {self.claiming_player.name} loses a life.")
             self.subtract_life(pp, self.current_claim().count - tot)
             self.current_player = self.prev_player()
             self.start_new_round()
         else:
             # Doubt unjustified
+            self.logger.info(f"Doubt unjustified! {self.current_player.name} loses a life.")
             self.subtract_life(self.current_player, tot - self.current_claim().count)
             self.start_new_round()
 
     def subtract_life(self, p, diff):
+        old_lives = p.lives
         p.lives -= 1
+        self.logger.info(f"{p.name} loses a life. Lives: {old_lives} -> {p.lives}")
         if p.lives == 0:
-            p.Status = Status.DEAD
+            p.status = Status.DEAD
+            self.logger.info(f"{p.name} is eliminated!")
 
     def eliminate_player(self, p):
         p.status = Status.DEAD
-
-    def claim(self, claim):
-        self.current_player.claim = claim
-        self.current_player.status = Status.CLAIM
+        self.logger.info(f"{p.name} eliminated from the game.")
 
 
     def start_new_round(self):
+        self.logger.info("Starting new round.")
         for p in self.players:
             if p.lives > 0:
                 p.dice = [random.randint(1, 6) for _ in range(5)]
+                self.logger.info(f"{p.name} rolls: {p.dice}")
         self.reset_claims()
         self.current_player = self.prev_player()
         self.next_turn()
 
     def start_game(self):
         self.current_player = self.players[random.randint(0, len(self.players) - 1)]
+        self.current_player_id = self.players.index(self.current_player)
+        self.logger.info(f"Game started. First player: {self.current_player.name}")
         self.start_new_round()
 
     def reset_claims(self):
+        self.logger.info("Resetting claims for all players.")
         for p in self.players:
             p.claim = Claim(0, 0)
 
