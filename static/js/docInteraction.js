@@ -1,6 +1,6 @@
 import * as util from './util.js';
 import { Status } from './types.js';
-import { startGame, getPlayerIdxByPlayer } from './dice.js';
+import { getPlayerIdxByPlayer } from './dice.js';
 let listenersAlreadyAdded = false;
 export function addDarkListener() {
     const darkToggle = document.getElementById('darkModeToggle');
@@ -163,7 +163,7 @@ export function activatePlayerTurnSection(currentClaim, claim, currentNumDice) {
     interactiveElements.forEach(element => {
         element.removeAttribute('disabled');
     });
-    if (currentClaim.count == 0) {
+    if (currentClaim == null || currentClaim.count == 0) {
         const doubtButton = document.getElementById('doubt-section').querySelector('button');
         doubtButton.setAttribute('disabled', 'true');
     }
@@ -242,7 +242,7 @@ function createLossModeChoice(optionsPanel) {
     }
 }
 export function activateMainSection() {
-    document.getElementById('options-panel').remove();
+    //document.getElementById('options-panel').remove();
     document.getElementById('player-container').style.display = 'grid';
     document.getElementById('info-section').style.display = 'block';
 }
@@ -259,7 +259,7 @@ function restartGame() {
     document.getElementById('player-turn-section').innerHTML = '';
     document.getElementById('npc-container').innerHTML = '';
     document.getElementById('info-section').innerHTML = '';
-    createGameChoices(startGame);
+    //createGameChoices(startGame);
 }
 export function setPlayerStatus(player, status) {
     const playerId = getPlayerIdxByPlayer(player);

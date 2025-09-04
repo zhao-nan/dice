@@ -3,11 +3,12 @@ import * as doc from './docInteraction.js';
 const socket = io("http://127.0.0.1:5000");
 socket.on('update_game_state', (gameState) => { updateUI(gameState); });
 socket.on('update_players', (playerString) => {
-    document.getElementById('info-section').innerText = playerString;
+    document.getElementById('info-section').innerText = "Currently in the lobby: \n" + playerString;
     createButton('info-section', 'startGame', 'Start Game', startGame);
 });
 socket.on('game_started', (gameStateString) => {
     const gameState = JSON.parse(gameStateString);
+    gameID = gameState.gameID;
     players = gameState.players;
     currentPlayer = players[gameState.current_player.id];
     currentNumPlayers = players.filter(p => p.lives > 0).length;
@@ -27,38 +28,75 @@ function createButton(parentId, buttonId, buttonText, onClickFunction) {
     parentElement.appendChild(button);
 }
 export function startGame() {
-    // Send start game request to server
-    // Example: socket.emit('start_game');
     socket.emit('start_game');
+}
+export function restartGame() {
+    socket.emit('restart_game', gameID);
 }
 window.onload = letsGo;
 var currentPlayer;
+var claimingPlayer;
 var players = new Array();
+var gameID = 0;
 let currentNumPlayers;
 let lossModeDice = false;
 function letsGo() {
     doc.addDarkListener();
     //doc.createRulesSection();
-    doc.createGameChoices(startGame);
+    //doc.createGameChoices(startGame);
     document.getElementById('info-section').innerText = 'Waiting for players...';
 }
 function updateUI(gameStateString) {
     const gameState = JSON.parse(gameStateString);
     console.log(gameState);
     players = gameState.players;
-    currentPlayer = players[gameState.current_player_id];
+    currentPlayer = gameState.current_player;
+    claimingPlayer = gameState.claiming_player;
     currentNumPlayers = players.filter(p => p.lives > 0).length;
-    console.log(currentPlayer);
+    document.getElementById('info-section').innerText = gameState.statusMessages.join('\n');
     players.forEach((p) => {
         doc.updatePlayerSection(p);
         doc.setPlayerStatus(p, p.status);
     });
-    if (currentPlayer.id == socket.id) {
-        doc.appendInfoNewline('Waiting for your turn...');
-        doc.activatePlayerTurnSection(currentPlayer.claim, claim, numActiveDice());
+    if (currentNumPlayers <= 1) {
+        doc.deactivatePlayerTurnSection();
+        createButton('info-section', 'startGame', 'Play again', restartGame);
+        // Remove the 'dead' class for all players
+        players.forEach((player) => {
+            const diceContainer = document.getElementById('dice-container' + players.indexOf(player));
+            if (diceContainer) {
+                diceContainer.classList.remove('dead');
+            }
+        });
     }
     else {
-        doc.deactivatePlayerTurnSection();
+        console.log(currentPlayer, socket.id);
+        if (currentPlayer.id == socket.id) {
+            doc.appendInfoNewline('Your turn!');
+            if (!claimingPlayer) {
+                doc.activatePlayerTurnSection(new Claim(0, 0), claim, numActiveDice());
+            }
+            else {
+                doc.activatePlayerTurnSection(claimingPlayer.claim, claim, numActiveDice());
+            }
+        }
+        else {
+            doc.deactivatePlayerTurnSection();
+            doc.appendInfoNewline('Waiting for your turn...');
+        }
+    }
+    if (gameState.revealDiceVal > 0) {
+        doc.reveal(gameState.revealDiceVal);
+        if (currentPlayer.id == socket.id && currentNumPlayers > 1) {
+            document.getElementById('claim-button').innerText = 'Next Round!';
+            doc.activatePlayerTurnSection(new Claim(0, 0), next_round, numActiveDice());
+            document.getElementById('claim-button').setAttribute('disabled', 'false');
+            doc.updateClaimButton(new Claim(0, 0));
+        }
+    }
+    else {
+        doc.hide();
+        document.getElementById('claim-button').innerText = '❗ Claim ❗';
     }
 }
 function claim(claim) {
@@ -68,6 +106,10 @@ function claim(claim) {
 function doubt() {
     // Send doubt to server
     socket.emit('doubt');
+}
+function next_round(claim) {
+    // Send doubt to server
+    socket.emit('next_round');
 }
 function startRoundMsg(p) {
     if (p.id == socket.id)
