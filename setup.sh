@@ -15,6 +15,25 @@ if ! pyenv versions | grep -q "3.13.5"; then
     pyenv install 3.13.5
 fi
 
+# Check if virtual environment exists and is activated
+if [[ "$VIRTUAL_ENV" == "" ]]; then
+    print_warning "Virtual environment not activated. Attempting to activate..."
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+        print_success "Virtual environment activated"
+    else
+        print_error "Virtual environment not found. Please run setup.sh first."
+        exit 1
+    fi
+fi
+
+# Check if TypeScript is installed
+if ! command -v tsc &> /dev/null; then
+    print_warning "TypeScript not found. Installing TypeScript..."
+    npm install -g typescript
+    print_success "TypeScript installed"
+fi
+
 # Set local Python version
 pyenv local 3.13.5
 

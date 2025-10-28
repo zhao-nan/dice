@@ -31,25 +31,6 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if virtual environment exists and is activated
-if [[ "$VIRTUAL_ENV" == "" ]]; then
-    print_warning "Virtual environment not activated. Attempting to activate..."
-    if [ -d "venv" ]; then
-        source venv/bin/activate
-        print_success "Virtual environment activated"
-    else
-        print_error "Virtual environment not found. Please run setup.sh first."
-        exit 1
-    fi
-fi
-
-# Check if TypeScript is installed
-if ! command -v tsc &> /dev/null; then
-    print_warning "TypeScript not found. Installing TypeScript..."
-    npm install -g typescript
-    print_success "TypeScript installed"
-fi
-
 # Function to compile TypeScript files
 compile_typescript() {
     print_status "Compiling TypeScript files..."
